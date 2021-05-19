@@ -3,11 +3,17 @@ Models contain:
 """
 
 from django.db import models
-# from django.contrib.auth import get_user_model
-#
-# User = get_user_model()
-from ..users.models import User
 
+# from django.contrib.auth import get_user_model
+# User = get_user_model()
+
+# from softdesk_project.users.models import User
+# from django.apps import apps
+# User = apps.get_model('users', 'User')
+# from users.models import User
+
+from django.conf import settings
+User = settings.AUTH_USER_MODEL
 
 class Project(models.Model):
     title = models.CharField(max_length=128)
@@ -47,7 +53,8 @@ class Issue(models.Model):
     priority = models.CharField(max_length=32)
     status = models.CharField(max_length=32)
     author_user = models.ForeignKey(User, related_name='issues', on_delete=models.CASCADE)
-    assignee_user = models.ForeignKey(User, related_name='issues', on_delete=models.CASCADE)   # ???
+    # Do not put the same related name as which of author_user
+    assignee_user = models.ForeignKey(User, related_name='assignee_issues', on_delete=models.CASCADE)
     project = models.ForeignKey(Project, related_name='issues', on_delete=models.CASCADE)  # ??? project_id : integer
     created_time = models.DateTimeField(auto_now_add=True)
 

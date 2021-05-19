@@ -6,7 +6,18 @@ from .models import (
     Comment,
 )
 
-from ..users.serializers import UserSerializer
+# from django.contrib.auth import get_user_model
+# User = get_user_model()
+
+# from softdesk_project.users.serializers import UserSerializer
+
+from django.conf import settings
+User = settings.AUTH_USER_MODEL
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'first_name', 'last_name', 'email')
 
 
 class DynamicFieldsModelSerializer(serializers.ModelSerializer):
@@ -26,7 +37,7 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
                 self.fields.pop(field_name)
 
 
-class ProjectSerializer(serializers.ModelSerializer):
+class ProjectSerializer(DynamicFieldsModelSerializer):
     users = UserSerializer(read_only=True, many=True)
 
     class Meta:
@@ -34,7 +45,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class ContributorSerializer(serializers.ModelSerializer):
+class ContributorSerializer(DynamicFieldsModelSerializer):
     # user = UserSerializer()
     # project = ProjectSerializer()
     class Meta:
@@ -43,14 +54,14 @@ class ContributorSerializer(serializers.ModelSerializer):
         depth = 2
 
 
-class IssueSerializer(serializers.ModelSerializer):
+class IssueSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Issue
         fields = '__all__'
         depth = 2
 
 
-class CommentSerializer(serializers.ModelSerializer):
+class CommentSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Comment
         fields = '__all__'

@@ -53,7 +53,7 @@ class UserLoginSerializer(serializers.Serializer):
                 'access': access_token,
                 'refresh': refresh_token,
                 'email': user.email,
-                'role': user.role,
+                # 'role': user.role,
             }
 
             return validation
@@ -72,6 +72,6 @@ class UserListSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             'email',
-            'role'
+            # 'role'
         )
 
