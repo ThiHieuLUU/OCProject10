@@ -3,19 +3,17 @@ Models contain:
 """
 
 from django.db import models
-from django.utils import timezone
-from django.conf import settings  # To use User = settings.AUTH_USER_MODEL
-from django.db import models
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
+# from django.contrib.auth import get_user_model
+#
+# User = get_user_model()
+from ..users.models import User
 
 
 class Project(models.Model):
     title = models.CharField(max_length=128)
     description = models.TextField(max_length=2048, blank=True)
     project_type = models.CharField(max_length=32)
-    users = models.ManyToManyField(User, through='Contributor')
+    users = models.ManyToManyField(User, through='Contributor', related_name='projects')
 
     def __str__(self):
         return f'Project title: {self.title}, type: {self.project_type}'
