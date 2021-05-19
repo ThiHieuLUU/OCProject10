@@ -54,7 +54,7 @@ class UserLoginView(APIView):
                 'refresh': serializer.data['refresh'],
                 'authenticatedUser': {
                     'email': serializer.data['email'],
-                    'role': serializer.data['role']
+                    # 'role': serializer.data['role']
                 }
             }
 
