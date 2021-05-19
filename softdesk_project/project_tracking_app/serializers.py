@@ -27,6 +27,7 @@ class UserLoginSerializer(serializers.Serializer):
     password = serializers.CharField(max_length=128, write_only=True)
     access = serializers.CharField(read_only=True)
     refresh = serializers.CharField(read_only=True)
+    role = serializers.CharField(read_only=True)
 
     def create(self, validated_date):
         pass

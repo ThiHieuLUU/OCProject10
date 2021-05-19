@@ -43,17 +43,6 @@ class CustomUserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     """User model."""
 
-    # These fields tie to the roles!
-    AUTHOR = 1
-    MANAGER = 2
-    CREATOR = 3
-
-    ROLE_CHOICES = (
-        (AUTHOR, 'Author'),
-        (MANAGER, 'Manager'),
-        (CREATOR, 'Creator')
-    )
-
     class Meta:
         verbose_name = 'user'
         verbose_name_plural = 'users'
@@ -62,7 +51,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=30, blank=True)
     last_name = models.CharField(max_length=50, blank=True)
-    role = models.PositiveSmallIntegerField(choices=ROLE_CHOICES, blank=True, null=True, default=7)
     date_joined = models.DateTimeField(auto_now_add=True)
     is_staff = models.BooleanField(default=False)  # Must have this field
     # is_active = models.BooleanField(default=False)
