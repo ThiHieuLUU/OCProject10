@@ -20,5 +20,5 @@ class ProjectViewSet(viewsets.ModelViewSet):
     """
     A viewset for viewing and editing project instances.
     """
-    queryset = Project.objects.all()
     serializer_class = ProjectSerializer
+    queryset = Project.objects.all()

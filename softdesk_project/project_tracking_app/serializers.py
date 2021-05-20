@@ -11,8 +11,11 @@ from .models import (
 
 # from softdesk_project.users.serializers import UserSerializer
 
-from django.conf import settings
-User = settings.AUTH_USER_MODEL
+from softdesk_project.users.models import User
+
+
+# from django.conf import settings
+# User = settings.AUTH_USER_MODEL
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -38,11 +41,13 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
 
 
 class ProjectSerializer(DynamicFieldsModelSerializer):
-    users = UserSerializer(read_only=True, many=True)
+    # users = UserSerializer(read_only=True, many=True)
 
     class Meta:
         model = Project
-        fields = '__all__'
+        # fields = ['users', 'title', 'description']
+        fields = ['title', 'description']
+        # fields = '__all__'
 
 
 class ContributorSerializer(DynamicFieldsModelSerializer):

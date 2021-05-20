@@ -68,21 +68,34 @@ class UserListView(APIView):
 
     def get(self, request):
         user = request.user
-        if user.role != 1:
-            response = {
-                'success': False,
-                'status_code': status.HTTP_403_FORBIDDEN,
-                'message': 'You are not authorized to perform this action'
-            }
-            return Response(response, status.HTTP_403_FORBIDDEN)
-        else:
-            users = User.objects.all()
-            serializer = self.serializer_class(users, many=True)
-            response = {
-                'success': True,
-                'status_code': status.HTTP_200_OK,
-                'message': 'Successfully fetched users',
-                'users': serializer.data
+        users = User.objects.all()
+        serializer = self.serializer_class(users, many=True)
+        response = {
+            'success': True,
+            'status_code': status.HTTP_200_OK,
+            'message': 'Successfully fetched users',
+            'users': serializer.data
 
-            }
-            return Response(response, status=status.HTTP_200_OK)
+        }
+        return Response(response, status=status.HTTP_200_OK)
+
+    # def get(self, request):
+    #     user = request.user
+    #     if user.role != 1:
+    #         response = {
+    #             'success': False,
+    #             'status_code': status.HTTP_403_FORBIDDEN,
+    #             'message': 'You are not authorized to perform this action'
+    #         }
+    #         return Response(response, status.HTTP_403_FORBIDDEN)
+    #     else:
+    #         users = User.objects.all()
+    #         serializer = self.serializer_class(users, many=True)
+    #         response = {
+    #             'success': True,
+    #             'status_code': status.HTTP_200_OK,
+    #             'message': 'Successfully fetched users',
+    #             'users': serializer.data
+    #
+    #         }
+    #         return Response(response, status=status.HTTP_200_OK)
