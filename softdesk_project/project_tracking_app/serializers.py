@@ -6,12 +6,12 @@ from .models import (
     Comment,
 )
 
-# from django.contrib.auth import get_user_model
-# User = get_user_model()
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 # from softdesk_project.users.serializers import UserSerializer
 
-from softdesk_project.users.models import User
+# from softdesk_project.users.models import User
 
 
 # from django.conf import settings
@@ -41,12 +41,12 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
 
 
 class ProjectSerializer(DynamicFieldsModelSerializer):
-    # users = UserSerializer(read_only=True, many=True)
+    users = UserSerializer(read_only=True, many=True)
 
     class Meta:
         model = Project
-        # fields = ['users', 'title', 'description']
-        fields = ['title', 'description']
+        fields = ['users', 'project_type', 'title', 'description']
+        # fields = ['title', 'description']
         # fields = '__all__'
 
 

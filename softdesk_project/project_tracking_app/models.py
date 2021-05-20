@@ -1,11 +1,11 @@
 """Models for project tracking application.
 Models contain:
 """
-
+from django.contrib.auth import get_user_model
 from django.db import models
 
 # from django.contrib.auth import get_user_model
-# User = get_user_model()
+User = get_user_model()
 
 # from softdesk_project.users.models import User
 # from django.apps import apps
@@ -15,7 +15,9 @@ from django.db import models
 # from django.conf import settings
 # User = settings.AUTH_USER_MODEL
 
-from softdesk_project.users.models import User
+# from softdesk_project.users.models import User
+# from softdesk_project.users.models import User
+
 
 class Project(models.Model):
     title = models.CharField(max_length=128)
