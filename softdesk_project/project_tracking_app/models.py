@@ -24,6 +24,8 @@ class Project(models.Model):
     description = models.TextField(max_length=2048, blank=True)
     project_type = models.CharField(max_length=32)  # type (back-end, front-end, iOS ou Android),
     users = models.ManyToManyField(User, through='Contributor', related_name='projects')
+    # users = models.ManyToManyField(User, through='Contributor', through_fields=('project', 'user'),
+    #     related_name='projects')
 
     def __str__(self):
         return f'Project title: {self.title}, type: {self.project_type}'

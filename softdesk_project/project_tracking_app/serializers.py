@@ -7,7 +7,9 @@ from .models import (
 )
 
 from django.contrib.auth import get_user_model
+
 User = get_user_model()
+
 
 # from softdesk_project.users.serializers import UserSerializer
 
@@ -40,16 +42,6 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
                 self.fields.pop(field_name)
 
 
-class ProjectSerializer(DynamicFieldsModelSerializer):
-    users = UserSerializer(read_only=True, many=True)
-
-    class Meta:
-        model = Project
-        fields = ['users', 'project_type', 'title', 'description']
-        # fields = ['title', 'description']
-        # fields = '__all__'
-
-
 class ContributorSerializer(DynamicFieldsModelSerializer):
     # user = UserSerializer()
     # project = ProjectSerializer()
@@ -57,6 +49,18 @@ class ContributorSerializer(DynamicFieldsModelSerializer):
         model = Contributor
         fields = '__all__'
         depth = 2
+
+
+class ProjectSerializer(DynamicFieldsModelSerializer):
+    users = UserSerializer(read_only=True, many=True)
+
+    # users = ContributorSerializer(many=True)
+
+    class Meta:
+        model = Project
+        fields = ['users', 'project_type', 'title', 'description']
+        # fields = ['title', 'description']
+        # fields = '__all__'
 
 
 class IssueSerializer(DynamicFieldsModelSerializer):

@@ -22,3 +22,27 @@ class ProjectViewSet(viewsets.ModelViewSet):
     """
     serializer_class = ProjectSerializer
     queryset = Project.objects.all()
+
+
+class IssueViewSet(viewsets.ModelViewSet):
+    """
+    A viewset for viewing and editing issue instances.
+    """
+    serializer_class = IssueSerializer
+    queryset = Issue.objects.all()
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    """
+    A viewset for viewing and editing comment instances.
+    """
+    serializer_class = CommentSerializer
+    queryset = Comment.objects.all()
+
+
+class ContributorViewSet(viewsets.ModelViewSet):
+    """
+    A viewset for viewing and editing contributor instances.
+    """
+    serializer_class = ContributorSerializer
+    queryset = Contributor.objects.all()
