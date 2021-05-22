@@ -45,7 +45,10 @@ class Contributor(models.Model):
 
     user = models.ForeignKey(User, related_name='contributors', on_delete=models.CASCADE)
     project = models.ForeignKey(Project, related_name='contributors', on_delete=models.CASCADE)
-    permission = models.CharField(max_length=200, choices=ROLE_CHOICES, blank=True, default='Author')
+    # permission = models.PositiveSmallIntegerField(choices=ROLE_CHOICES, blank=True, default=AUTHOR)
+
+    # permission = models.CharField(max_length=200, choices=ROLE_CHOICES, default='Author')
+    permission = models.CharField(max_length=10, choices=ROLE_CHOICES)
     role = models.CharField(max_length=32) # What is this?
 
     def __str__(self):
@@ -53,11 +56,29 @@ class Contributor(models.Model):
 
 
 class Issue(models.Model):
+    TAG_CHOICES = (
+        ('BUG', 'Bug'),
+        ('IMPROVEMENT', 'Improvement'),
+        ('TASK', 'Task')
+    )
+
+    PRIORITY_CHOICES = (
+        ('LOW', 'Low'),
+        ('MEDIUM', 'Medium'),
+        ('HIGH', 'High')
+    )
+
+    STATUS_CHOICES = (
+        ('TODO', 'To Do'),
+        ('IN_PR', 'In Progress'),
+        ('COMPLETED', 'Completed')
+    )
+
     title = models.CharField(max_length=128)
     description = models.CharField(max_length=256)
-    tag = models.CharField(max_length=32)  # tag (BUG, IMPROVEMENT or TASK)
-    priority = models.CharField(max_length=32)  # priority (LOW, MEDIUM or HIGH)
-    status = models.CharField(max_length=32) # status (To do, In progress or Completed)
+    tag = models.CharField(max_length=16, choices=TAG_CHOICES, blank=True)  # tag (BUG, IMPROVEMENT or TASK)
+    priority = models.CharField(max_length=16, choices=PRIORITY_CHOICES, blank=True)  # priority (LOW, MEDIUM or HIGH)
+    status = models.CharField(max_length=16, choices=STATUS_CHOICES, blank=True) # status (To do, In progress or Completed)
     author_user = models.ForeignKey(User, related_name='issues', on_delete=models.CASCADE)
     # Do not put the same related name as which of author_user
     # assignee_user = models.ForeignKey(User, related_name='assignee_issues', on_delete=models.CASCADE)  # Default : author

@@ -5,6 +5,7 @@ from .views import (
     IssueViewSet,
     CommentViewSet,
     ContributorViewSet,
+    UserViewSet,
 )
 
 # See: https://github.com/alanjds/drf-nested-routers
@@ -29,9 +30,14 @@ router.register(r'contributors', ContributorViewSet, basename='contributors')
 # Generate: /viewset/projects/
 # Generate: /viewset/projects/{project_pk}
 
+projects_for_users_router = routers.NestedSimpleRouter(router, r'projects', lookup='project')
+projects_for_users_router.register(r'users', UserViewSet, basename='users')
+
 # http://127.0.0.1:8000/viewset/projects/3/comments/1/issues/1/
 urlpatterns = [
     path('viewset/', include(router.urls)),
     path('viewset/', include(projects_router.urls)),
     path('viewset/', include(issues_router.urls)),
+    path('viewset/', include(projects_for_users_router.urls)),
+
 ]

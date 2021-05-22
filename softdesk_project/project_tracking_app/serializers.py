@@ -75,14 +75,22 @@ class ProjectSerializer(DynamicFieldsModelSerializer):
 class ContributorSerializer(serializers.ModelSerializer):
     user = UserSerializer()
     project = ProjectSerializer() # Display users will be impacted by the manner user is serialized in project
-    permission_display = serializers.CharField(
-        source='get_permission_display'
-    )
-
+    permission = serializers.ChoiceField(choices=Contributor.ROLE_CHOICES)
+    # user_name = serializers.SerializerMethodField('get_user_name')
+    # permission = serializers.CharField(
+    #     source='get_permission_display'
+    # )
+    # year_in_school = serializers.CharField(source='get_year_in_school_display')
     class Meta:
         model = Contributor
-        fields = ['user', 'project', 'permission_display']
+        fields = ['user', 'project', 'permission']
         # fields = '__all__'
+
+
+    # def get_user_name(self, validated_data):
+    #     user = validated_data.get('user')
+    #     return user.user_name
+
 
     def create(self, validated_data) -> Contributor:
         # import ipdb;
@@ -101,7 +109,16 @@ class ContributorSerializer(serializers.ModelSerializer):
         return contributor
 
 
-class IssueSerializer(DynamicFieldsModelSerializer):
+class IssueSerializer(serializers.ModelSerializer):
+    tag = serializers.ChoiceField(choices=Issue.TAG_CHOICES)
+    priority = serializers.ChoiceField(choices=Issue.PRIORITY_CHOICES)  # priority (LOW, MEDIUM or HIGH)
+    status = serializers.ChoiceField(choices=Issue.STATUS_CHOICES) # status (To do, In progress or Completed)
+    author_user = UserSerializer()
+    # Do not put the same related name as which of author_user
+    # assignee_user = models.ForeignKey(User, related_name='assignee_issues', on_delete=models.CASCADE)  # Default : author
+    assignee_user = UserSerializer()
+    project = ProjectSerializer()
+
     class Meta:
         model = Issue
         fields = '__all__'
@@ -109,7 +126,10 @@ class IssueSerializer(DynamicFieldsModelSerializer):
 
 
 class CommentSerializer(DynamicFieldsModelSerializer):
+    author_user = UserSerializer(read_only=True)
+    issue = IssueSerializer()
     class Meta:
         model = Comment
-        fields = '__all__'
-        depth = 2
+        fields = ['description', 'author_user', 'issue']
+        # fields = '__all__'
+        # depth = 2
