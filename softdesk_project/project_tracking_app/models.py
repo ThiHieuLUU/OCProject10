@@ -33,19 +33,19 @@ class Project(models.Model):
 
 class Contributor(models.Model):
     # These fields tie to the roles!
-    AUTHOR = 1
-    MANAGER = 2
-    CREATOR = 3
+    # AUTHOR = 1
+    # MANAGER = 2
+    # CREATOR = 3
 
     ROLE_CHOICES = (
-        (AUTHOR, 'Author'),
-        (MANAGER, 'Manager'),
-        (CREATOR, 'Creator')
+        ('AUTHOR', 'Author'),
+        ('MANAGER', 'Manager'),
+        ('CREATOR', 'Creator')
     )
 
     user = models.ForeignKey(User, related_name='contributors', on_delete=models.CASCADE)
     project = models.ForeignKey(Project, related_name='contributors', on_delete=models.CASCADE)
-    permission = models.PositiveSmallIntegerField(choices=ROLE_CHOICES, blank=True, default=AUTHOR)
+    permission = models.CharField(max_length=200, choices=ROLE_CHOICES, blank=True, default='Author')
     role = models.CharField(max_length=32) # What is this?
 
     def __str__(self):

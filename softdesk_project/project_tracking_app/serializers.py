@@ -51,10 +51,9 @@ class ContributorSerializer(DynamicFieldsModelSerializer):
         depth = 2
 
 
-
-
 class ProjectSerializer(DynamicFieldsModelSerializer):
-    users = UserSerializer(read_only=True, many=True)
+    users = UserSerializer(read_only=True, many=True) # Not display User field
+    # users = UserSerializer(many=True) # Display "Users" field
 
     # users = ContributorSerializer(many=True)
     #
@@ -69,17 +68,21 @@ class ProjectSerializer(DynamicFieldsModelSerializer):
         fields = ['title', 'project_type', 'description', 'users']
         # fields = ['title', 'description']
         # fields = '__all__'
-        # depth = 1  # All info
-        depth = 2  # All info in UserSerializer
+        depth = 1  # All info
+        # depth = 2  # All info in UserSerializer
 
 
 class ContributorSerializer(serializers.ModelSerializer):
     user = UserSerializer()
-    project = ProjectSerializer()
+    project = ProjectSerializer() # Display users will be impacted by the manner user is serialized in project
+    permission_display = serializers.CharField(
+        source='get_permission_display'
+    )
 
     class Meta:
         model = Contributor
-        fields = '__all__'
+        fields = ['user', 'project', 'permission_display']
+        # fields = '__all__'
 
     def create(self, validated_data) -> Contributor:
         # import ipdb;

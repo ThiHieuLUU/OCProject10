@@ -32,6 +32,10 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
 
     def create(self, request, *args, **kwargs):
+        many = True if isinstance(request.data, list) else False
+        serializer = ProjectSerializer(data=request.data, many=many)
+        serializer.is_valid(raise_exception=True)
+
         data = request.data
         user = request.user
 
