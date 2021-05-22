@@ -22,7 +22,7 @@ User = get_user_model()
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'first_name', 'last_name', 'email')
+        fields = ('id', 'first_name', 'last_name', 'email', 'date_joined')
 
 
 class DynamicFieldsModelSerializer(serializers.ModelSerializer):
@@ -51,16 +51,51 @@ class ContributorSerializer(DynamicFieldsModelSerializer):
         depth = 2
 
 
+
+
 class ProjectSerializer(DynamicFieldsModelSerializer):
     users = UserSerializer(read_only=True, many=True)
 
     # users = ContributorSerializer(many=True)
+    #
+    # users = serializers.SlugRelatedField(
+    #     many=True,
+    #     read_only=True,
+    #     slug_field='email'
+    # )
 
     class Meta:
         model = Project
-        fields = ['users', 'project_type', 'title', 'description']
+        fields = ['title', 'project_type', 'description', 'users']
         # fields = ['title', 'description']
         # fields = '__all__'
+        # depth = 1  # All info
+        depth = 2  # All info in UserSerializer
+
+
+class ContributorSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    project = ProjectSerializer()
+
+    class Meta:
+        model = Contributor
+        fields = '__all__'
+
+    def create(self, validated_data) -> Contributor:
+        # import ipdb;
+        # ipdb.set_trace()
+        # create key_date_case
+        project = Project.objects.create(**validated_data.get('project'))
+
+        # create icd10
+        user = User.objects.create(**validated_data.get('user'))
+
+        # create connection
+        contributor = Contributor.objects.create(
+            user=user, project=project, permission=validated_data.get('permission'),
+            role=validated_data.get('role')
+        )
+        return contributor
 
 
 class IssueSerializer(DynamicFieldsModelSerializer):
