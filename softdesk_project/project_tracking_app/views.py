@@ -26,12 +26,10 @@ from .serializers import (
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
-    # class ProjectViewSet(viewsets.ViewSet):
     """
     A viewset for viewing and editing project instances.
     """
     serializer_class = ProjectSerializer
-    # queryset = self.get_queryset()
 
     def get_queryset(self):
         return self.request.user.projects.all() # Only projects of authenticated user
