@@ -31,22 +31,27 @@ class ProjectViewSet(viewsets.ModelViewSet):
     A viewset for viewing and editing project instances.
     """
     serializer_class = ProjectSerializer
-    queryset = Project.objects.all()
+    # queryset = self.get_queryset()
 
-    def list(self, request,):
-        queryset = Project.objects.filter()
+    def get_queryset(self):
+        return self.request.user.projects.all() # Only projects of authenticated user
+
+    def list(self, request):
+        queryset = self.get_queryset()
         serializer = ProjectSerializer(queryset, many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
-        queryset = Project.objects.filter()
-        client = get_object_or_404(queryset, pk=pk)
-        serializer = ProjectSerializer(client)
+        # queryset = Project.objects.filter()
+        queryset = self.get_queryset()
+        project = get_object_or_404(queryset, pk=pk)
+        serializer = ProjectSerializer(project)
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
-        many = True if isinstance(request.data, list) else False
-        serializer = ProjectSerializer(data=request.data, many=many)
+        # many = True if isinstance(request.data, list) else False
+        # serializer = ProjectSerializer(data=request.data, many=many)
+        serializer = ProjectSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         data = request.data
@@ -58,69 +63,25 @@ class ProjectViewSet(viewsets.ModelViewSet):
         new_project.save()
         contributor = Contributor.objects.create(project=new_project, user=user, permission="Author")
 
-        # for user in data["users"]:
-        #     user_obj = User.objects.get(email=user["email"])
-        #     new_project.users.add(user_obj)
-
-        serializer = ProjectSerializer(new_project)
-        # serializer = ContributorSerializer(contributor)
+        # serializer = ProjectSerializer(new_project)
+        serializer = ContributorSerializer(contributor) # Display contributor serializer or project?
 
         return Response(serializer.data)
-
-    # def create(self, request, *args, **kwargs):
-    #     many = True if isinstance(request.data, list) else False
-    #     serializer = ProjectSerializer(data=request.data, many=many)
-    #     serializer.is_valid(raise_exception=True)
-    #     user = request.user  # you can change here
-    #     project_list = [Project(**data, user=user) for data in serializer.validated_data]
-    #     Project.objects.bulk_create(project_list)
-    #     return Response({}, status=status.HTTP_201_CREATED)
-
-    # def create(self, request, *args, **kwargs):
-    #     many = True if isinstance(request.data, list) else False
-    #     serializer = ProjectSerializer(data=request.data, many=many)
-    #     serializer.is_valid(raise_exception=True)
-    #     author = request.user  # you can change here
-    #     project_list = [Project(**data, author=author) for data in serializer.validated_data]
-    #     Project.objects.bulk_create(project_list)
-    #     return Response({}, status=status.HTTP_201_CREATED)
-
-    # @action(detail=True, methods=['get'])
-    # # @action(detail=True, methods=['get', 'post'])
-    # def users(self, request, pk=None):
-    #     project = get_object_or_404(Project, pk=pk)
-    #     users = project.users.all()
-    #     serializer = UserSerializer(users, many=True)
-    #     return Response(serializer.data)
-
-
-# class ContributorCreateAPIView(ListCreateAPIView):
-#     permission_classes = (AllowAny,)
-#
-#     def get_queryset(self):
-#         if self.request.method == 'GET':
-#             return MyModel.objects.all()
-#
-#     def get_serializer_class(self):
-#         if self.request.method == 'GET':
-#             return MyModelSerializer
-#         else:
-#             return ListOfItemsSerializer
 
 class UserViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.DestroyModelMixin):
     """
     A viewset for viewing and editing issue instances.
     """
+    # serializer_class = UserSerializer
     serializer_class = UserSerializer
     queryset = User.objects.all()
 
-    def get_serializer_class(self):
-        if self.request.method == 'GET':
-            return UserSerializer
-        else:
-            return ContributorSerializer
+    # def get_serializer_class(self):
+    #     if self.request.method == 'GET':
+    #         return UserSerializer
+    #     else:
+    #         return ContributorSerializer
 
-    # @action(methods=['get'], detail=False, serializer_class=CustomPostSerializer)
     def list(self, request, project_pk=None):
         project = get_object_or_404(Project, pk=project_pk)
         # project = Project.objects.get(pk=project_pk)
@@ -129,11 +90,17 @@ class UserViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateM
         return Response(serializer.data)
 
     # def create(self, request, project_pk=None):
-    #     project = get_object_or_404(Project, pk=project_pk)
-    #     contributor = ContributorCreateAPIView.c
+    #     serializer = ContributorSerializer(data=request.data)
+    #     serializer.is_valid(raise_exception=True)
     #
-    #     # all_users = User.objects.all()
-    #     # all_user_choices = ((x.username, x.get_full_name()) for x in all_users)
+    #     project = get_object_or_404(Project, pk=project_pk)
+    #     contributor = serializer.create(serializer.data)
+    #     contributor.project = project
+    #     contributor.save()
+    #
+    #     serializer = ContributorSerializer(contributor)
+    #     # serializer = ProjectSerializer(project)  # Use project or contributor
+    #     return Response(serializer.data)
 
     def retrieve(self, request, pk=None, project_pk=None):
         queryset = User.objects.filter(pk=pk, projects=project_pk)
@@ -141,13 +108,13 @@ class UserViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateM
         serializer = UserSerializer(user)
         return Response(serializer.data)
 
-    # def retrieve(self, request, pk=None, project_pk=None):
-    #     project = get_object_or_404(Project, pk=project_pk)
-    #
-    #     queryset = User.objects.filter(pk=pk, project=project_pk)
-    #     user = get_object_or_404(queryset, pk=pk)
-    #     serializer = UserSerializer(user)
-    #     return Response(serializer.data)
+    def destroy(self, request, pk=None, project_pk=None):
+        contributor = Contributor.objects.filter(user=pk, project=project_pk)
+        if contributor:
+            contributor.delete()
+        else:
+            raise("No user id = {pk} for this project")
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class IssueViewSet(viewsets.ModelViewSet):

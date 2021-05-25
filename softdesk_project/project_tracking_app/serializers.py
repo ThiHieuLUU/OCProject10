@@ -44,7 +44,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class ProjectSerializer(DynamicFieldsModelSerializer):
-    users = UserSerializer(read_only=True, many=True) # Not display User field
+    users = UserSerializer(read_only=True, many=True) # Display User info for serialisation (Get, retrieve)
 
     class Meta:
         model = Project
@@ -88,7 +88,7 @@ class ContributorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contributor
         fields = ['user', 'project', 'permission', 'user_choice']
-        # read_only_fields = ['project']
+        read_only_fields = ['project']
 
     def create(self, validated_data) -> Contributor:
         user_choice = validated_data.get("user_choice")  # if none ???
