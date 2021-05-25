@@ -87,18 +87,18 @@ class UserViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateM
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
 
-    # def create(self, request, project_pk=None):
-    #     serializer = ContributorSerializer(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #
-    #     project = get_object_or_404(Project, pk=project_pk)
-    #     contributor = serializer.create(serializer.data)
-    #     contributor.project = project
-    #     contributor.save()
-    #
-    #     serializer = ContributorSerializer(contributor)
-    #     # serializer = ProjectSerializer(project)  # Use project or contributor
-    #     return Response(serializer.data)
+    def create(self, request, project_pk=None):
+        serializer = ContributorSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        project = get_object_or_404(Project, pk=project_pk)
+        contributor = serializer.create(serializer.data)
+        contributor.project = project
+        contributor.save()
+
+        serializer = ContributorSerializer(contributor)
+        # serializer = ProjectSerializer(project)  # Use project or contributor
+        return Response(serializer.data)
 
     def retrieve(self, request, pk=None, project_pk=None):
         queryset = User.objects.filter(pk=pk, projects=project_pk)
