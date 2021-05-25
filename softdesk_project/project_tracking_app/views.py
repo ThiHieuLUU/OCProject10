@@ -107,11 +107,19 @@ class UserViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateM
         return Response(serializer.data)
 
     def destroy(self, request, pk=None, project_pk=None):
-        contributor = Contributor.objects.filter(user=pk, project=project_pk)
-        if contributor:
-            contributor.delete()
-        else:
-            raise("No user id = {pk} for this project")
+        # contributor = Contributor.objects.filter(user=pk, project=project_pk)
+        contributor = get_object_or_404(Contributor, user=pk, project=project_pk)
+        print(contributor)
+        contributor.delete()
+        # if contributor:
+        #     contributor.delete()
+        # else:
+        #     raise ("No user id = {pk} for this project")
+        # print(contributor)
+        # if contributor:
+        #     contributor.delete()
+        # else:
+        #     raise("No user id = {pk} for this project")
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
