@@ -1,3 +1,5 @@
+from django.shortcuts import get_object_or_404
+from django.utils.functional import lazy
 from rest_framework import serializers
 from .models import (
     Project,
@@ -9,21 +11,6 @@ from .models import (
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
-
-
-# from softdesk_project.users.serializers import UserSerializer
-
-# from softdesk_project.users.models import User
-
-
-# from django.conf import settings
-# User = settings.AUTH_USER_MODEL
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('id', 'first_name', 'last_name', 'email', 'date_joined')
-
 
 class DynamicFieldsModelSerializer(serializers.ModelSerializer):
 
@@ -41,72 +28,27 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
             for field_name in existing - allowed:
                 self.fields.pop(field_name)
 
-
-class ContributorSerializer(DynamicFieldsModelSerializer):
-    # user = UserSerializer()
-    # project = ProjectSerializer()
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Contributor
-        fields = '__all__'
-        depth = 2
+        model = User
+        fields = ('id', 'first_name', 'last_name', 'email')
+
+
+# class ContributorSerializer(DynamicFieldsModelSerializer):
+#     # user = UserSerializer()
+#     # project = ProjectSerializer()
+#     class Meta:
+#         model = Contributor
+#         fields = '__all__'
+#         depth = 2
 
 
 class ProjectSerializer(DynamicFieldsModelSerializer):
     users = UserSerializer(read_only=True, many=True) # Not display User field
-    # users = UserSerializer(many=True) # Display "Users" field
-
-    # users = ContributorSerializer(many=True)
-    #
-    # users = serializers.SlugRelatedField(
-    #     many=True,
-    #     read_only=True,
-    #     slug_field='email'
-    # )
 
     class Meta:
         model = Project
         fields = ['title', 'project_type', 'description', 'users']
-        # fields = ['title', 'description']
-        # fields = '__all__'
-        depth = 1  # All info
-        # depth = 2  # All info in UserSerializer
-
-
-class ContributorSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
-    project = ProjectSerializer() # Display users will be impacted by the manner user is serialized in project
-    permission = serializers.ChoiceField(choices=Contributor.ROLE_CHOICES)
-    # user_name = serializers.SerializerMethodField('get_user_name')
-    # permission = serializers.CharField(
-    #     source='get_permission_display'
-    # )
-    # year_in_school = serializers.CharField(source='get_year_in_school_display')
-    class Meta:
-        model = Contributor
-        fields = ['user', 'project', 'permission']
-        # fields = '__all__'
-
-
-    # def get_user_name(self, validated_data):
-    #     user = validated_data.get('user')
-    #     return user.user_name
-
-
-    def create(self, validated_data) -> Contributor:
-        # import ipdb;
-        # ipdb.set_trace()
-        # create key_date_case
-        project = Project.objects.create(**validated_data.get('project'))
-
-        # create icd10
-        user = User.objects.create(**validated_data.get('user'))
-
-        # create connection
-        contributor = Contributor.objects.create(
-            user=user, project=project, permission=validated_data.get('permission'),
-            role=validated_data.get('role')
-        )
-        return contributor
 
 
 class IssueSerializer(serializers.ModelSerializer):
@@ -133,3 +75,27 @@ class CommentSerializer(DynamicFieldsModelSerializer):
         fields = ['description', 'author_user', 'issue']
         # fields = '__all__'
         # depth = 2
+
+
+def get_users():
+    return User.objects.all()
+
+
+class ContributorSerializer(serializers.ModelSerializer):
+    user_choice = serializers.ChoiceField(choices=lazy(get_users, tuple)(), write_only=True)
+    permission = serializers.ChoiceField(choices=Contributor.ROLE_CHOICES)
+
+    class Meta:
+        model = Contributor
+        fields = ['user', 'project', 'permission', 'user_choice']
+        # read_only_fields = ['project']
+
+    def create(self, validated_data) -> Contributor:
+        user_choice = validated_data.get("user_choice")  # if none ???
+        user_email = user_choice
+        user = User.objects.filter(email=user_email)
+        permission = validated_data.get("permission")
+        contributor = Contributor.objects.create(user=user, permission=permission)
+        return contributor
+
+

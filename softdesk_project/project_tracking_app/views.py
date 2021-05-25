@@ -5,6 +5,8 @@ from rest_framework import generics, mixins
 from rest_framework import viewsets, status
 from rest_framework.exceptions import NotFound
 from rest_framework.decorators import action
+from rest_framework.generics import ListCreateAPIView
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from .models import (
@@ -54,12 +56,14 @@ class ProjectViewSet(viewsets.ModelViewSet):
             title=data["title"], description=data['description'], project_type=data["project_type"])
 
         new_project.save()
+        contributor = Contributor.objects.create(project=new_project, user=user, permission="Author")
 
-        for user in data["users"]:
-            user_obj = User.objects.get(email=user["email"])
-            new_project.users.add(user_obj)
+        # for user in data["users"]:
+        #     user_obj = User.objects.get(email=user["email"])
+        #     new_project.users.add(user_obj)
 
         serializer = ProjectSerializer(new_project)
+        # serializer = ContributorSerializer(contributor)
 
         return Response(serializer.data)
 
@@ -89,19 +93,47 @@ class ProjectViewSet(viewsets.ModelViewSet):
     #     serializer = UserSerializer(users, many=True)
     #     return Response(serializer.data)
 
-class UserViewSet(viewsets.ModelViewSet):
+
+# class ContributorCreateAPIView(ListCreateAPIView):
+#     permission_classes = (AllowAny,)
+#
+#     def get_queryset(self):
+#         if self.request.method == 'GET':
+#             return MyModel.objects.all()
+#
+#     def get_serializer_class(self):
+#         if self.request.method == 'GET':
+#             return MyModelSerializer
+#         else:
+#             return ListOfItemsSerializer
+
+class UserViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.DestroyModelMixin):
     """
     A viewset for viewing and editing issue instances.
     """
     serializer_class = UserSerializer
     queryset = User.objects.all()
 
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return UserSerializer
+        else:
+            return ContributorSerializer
+
+    # @action(methods=['get'], detail=False, serializer_class=CustomPostSerializer)
     def list(self, request, project_pk=None):
         project = get_object_or_404(Project, pk=project_pk)
         # project = Project.objects.get(pk=project_pk)
         users = project.users.all()
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
+
+    # def create(self, request, project_pk=None):
+    #     project = get_object_or_404(Project, pk=project_pk)
+    #     contributor = ContributorCreateAPIView.c
+    #
+    #     # all_users = User.objects.all()
+    #     # all_user_choices = ((x.username, x.get_full_name()) for x in all_users)
 
     def retrieve(self, request, pk=None, project_pk=None):
         queryset = User.objects.filter(pk=pk, projects=project_pk)
@@ -181,7 +213,7 @@ class ContributorViewSet(viewsets.ModelViewSet):
     """
     A viewset for viewing and editing contributor instances.
     """
-    permission_classes = ()
+    # permission_classes = ()
     serializer_class = ContributorSerializer
     queryset = Contributor.objects.all()
 
