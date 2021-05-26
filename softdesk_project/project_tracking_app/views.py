@@ -66,7 +66,13 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
-class UserViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.DestroyModelMixin):
+class UserViewSet(
+    viewsets.GenericViewSet,
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    # ListCreateAPIView
+):
     """
     A viewset for viewing and editing issue instances.
     """
@@ -74,11 +80,11 @@ class UserViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateM
     serializer_class = UserSerializer
     queryset = User.objects.all()
 
-    # def get_serializer_class(self):
-    #     if self.request.method == 'GET':
-    #         return UserSerializer
-    #     else:
-    #         return ContributorSerializer
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return UserSerializer
+        else:
+            return ContributorSerializer
 
     def list(self, request, project_pk=None):
         project = get_object_or_404(Project, pk=project_pk)
@@ -88,17 +94,55 @@ class UserViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateM
         return Response(serializer.data)
 
     def create(self, request, project_pk=None):
-        serializer = ContributorSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        data = request.data
+        required_field = "user_choice"
+        if required_field in data:
+            user_choice = data.get(required_field)
+            user_email = user_choice  # This test for email, must to generate
+            print(user_email)
+            user = get_object_or_404(User, email=user_email)
+            project = get_object_or_404(Project, pk=project_pk)
+            # print(user)
 
-        project = get_object_or_404(Project, pk=project_pk)
-        contributor = serializer.create(serializer.data)
-        contributor.project = project
-        contributor.save()
+            contributor = Contributor.objects.create(user=user, project=project)
+            # user = User.objects.get(pk=1)
+            # contributor.user = user
+            # contributor.save()
+            serializer = ContributorSerializer(contributor)
+            return Response(serializer.data)
 
-        serializer = ContributorSerializer(contributor)
+        else:
+            raise("No corresponding user for this operation")
+
+        # serializer = ContributorSerializer(data=request.data)
+        # serializer.is_valid(raise_exception=True)
+        #
+        # project = get_object_or_404(Project, pk=project_pk)
+        # contributor = serializer.create(serializer.data)
+        # print(serializer.data)
+
+        # contributor1 = Contributor.objects.get(pk=1)
+        # ser1 = ContributorSerializer(contributor1)
+        # print(ser1.data)
+        # print(request.data)
+        # print(request.data.get('user_choice'))
+
+        # serializer = ContributorSerializer(data=request.data)
+        # print(serializer.is_valid())
+        # print(serializer.data)
+        # print(serializer.data.get("user_choice"))
+
+        # serializer = ContributorSerializer()
+        # print(serializer)
+        # contributor.project = project
+        # contributor.save()
+
+        # serializer = ContributorSerializer(contributor)
         # serializer = ProjectSerializer(project)  # Use project or contributor
-        return Response(serializer.data)
+        #
+        # user = User.objects.get(pk=1)
+        # serializer = UserSerializer(user)
+        # return Response(serializer.data)
 
     def retrieve(self, request, pk=None, project_pk=None):
         queryset = User.objects.filter(pk=pk, projects=project_pk)
@@ -107,19 +151,8 @@ class UserViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateM
         return Response(serializer.data)
 
     def destroy(self, request, pk=None, project_pk=None):
-        # contributor = Contributor.objects.filter(user=pk, project=project_pk)
         contributor = get_object_or_404(Contributor, user=pk, project=project_pk)
-        print(contributor)
         contributor.delete()
-        # if contributor:
-        #     contributor.delete()
-        # else:
-        #     raise ("No user id = {pk} for this project")
-        # print(contributor)
-        # if contributor:
-        #     contributor.delete()
-        # else:
-        #     raise("No user id = {pk} for this project")
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
