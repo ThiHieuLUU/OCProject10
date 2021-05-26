@@ -147,7 +147,7 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=100), # For test, to change : 5, 10
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30), # For test, to change : 5, 10
     'REFRESH_TOKEN_LIFETIME': timedelta(days=10),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,

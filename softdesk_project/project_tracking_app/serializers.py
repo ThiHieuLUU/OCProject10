@@ -48,7 +48,6 @@ class IssueSerializer(serializers.ModelSerializer):
     priority = serializers.ChoiceField(choices=Issue.PRIORITY_CHOICES)  # priority (LOW, MEDIUM or HIGH)
     status = serializers.ChoiceField(choices=Issue.STATUS_CHOICES) # status (To do, In progress or Completed)
     author_user = UserSerializer()
-    # Do not put the same related name as which of author_user
     # assignee_user = models.ForeignKey(User, related_name='assignee_issues', on_delete=models.CASCADE)  # Default : author
     assignee_user = UserSerializer()
     project = ProjectSerializer()
@@ -71,42 +70,24 @@ class CommentSerializer(DynamicFieldsModelSerializer):
 
 def get_users():
     users = User.objects.all()
-    # user_choices = ((user.first_name + user.last_name, user.email) for user in users)
     # user_choices = [user.first_name + user.last_name for user in users]
     user_choices = [user.email for user in users]
     return user_choices
 
-# class ContributorSerializer(DynamicFieldsModelSerializer):
-#     # user = UserSerializer()
-#     # project = ProjectSerializer()
-#     class Meta:
-#         model = Contributor
-#         fields = '__all__'
-#         depth = 2
+class ContributorSerializer(DynamicFieldsModelSerializer):
+    class Meta:
+        model = Contributor
+        fields = '__all__'
+        depth = 2
 
 
-class ContributorSerializer(serializers.ModelSerializer):
+class ContributorChoiceSerializer(serializers.Serializer):
     user_choice = serializers.ChoiceField(choices=lazy(get_users, tuple)(), write_only=True)
-    # permission = serializers.ChoiceField(choices=Contributor.ROLE_CHOICES)
+    permission = serializers.ChoiceField(choices=Contributor.ROLE_CHOICES)
 
     class Meta:
         model = Contributor
-        # fields = ['permission', 'user_choice']
-        fields = ['user_choice']
-        read_only_fields = ['project', 'user', 'permission']
+        fields = ['user_choice', 'permission']
 
-    def create(self, validated_data):
-        user_choice = validated_data.get("user_choice")  # if none ???
-        user_email = user_choice
-        print(user_email)
-        # user = get_object_or_404(User, email=user_email)
-        # user = User.objects.filter(email=user_email)
-        # permission = validated_data.get("permission")
-        # contributor = Contributor.objects.create(user=user, permission=permission)
-        # permission = validated_data.get("permission")
-        # contributor = Contributor.objects.create(user=user, permission="Defaut")
-        # return contributor
-
-        return Contributor.objects.create()
 
 
