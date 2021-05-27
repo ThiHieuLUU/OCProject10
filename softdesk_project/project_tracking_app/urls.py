@@ -35,9 +35,9 @@ projects_for_users_router.register(r'users', UserViewSet, basename='users')
 
 # http://127.0.0.1:8000/viewset/projects/3/comments/1/issues/1/
 urlpatterns = [
-    path('viewset/', include(router.urls)),
-    path('viewset/', include(projects_router.urls)),
-    path('viewset/', include(issues_router.urls)),
-    path('viewset/', include(projects_for_users_router.urls)),
+    path('', include(router.urls)),
+    path('', include(projects_router.urls)),
+    path('', include(issues_router.urls)),
+    path('', include(projects_for_users_router.urls)),
 
 ]
