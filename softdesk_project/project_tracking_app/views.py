@@ -1,14 +1,8 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import get_object_or_404
 from rest_framework import generics, mixins
 
-# Create your views here.
 from rest_framework import viewsets, status
-from rest_framework.exceptions import NotFound
-from rest_framework.decorators import action
-from rest_framework.generics import ListCreateAPIView
-from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from rest_framework.exceptions import APIException
 
 from .models import (
     User,
@@ -21,7 +15,6 @@ from .serializers import (
     UserSerializer,
     ProjectSerializer,
     ContributorSerializer,
-    ContributorChoiceSerializer,
     IssueSerializer,
     CommentSerializer,
 )
@@ -78,11 +71,6 @@ class UserViewSet(
     serializer_class = UserSerializer
     queryset = User.objects.all()
 
-    def get_serializer_class(self):
-        if self.request.method == 'GET':
-            return UserSerializer
-        else:
-            return ContributorChoiceSerializer
 
     def list(self, request, project_pk=None):
         project = get_object_or_404(Project, pk=project_pk)
@@ -92,24 +80,15 @@ class UserViewSet(
 
     def create(self, request, project_pk=None):
         # How to control input, e.g. must correspond to choice pre-defined?
+        project = get_object_or_404(Project, pk=project_pk)
         data = request.data
-        required_user = "user_choice"
-        required_permission = "permission"
-        if required_user in data and required_permission in data:
-            user_choice = data.get(required_user)
-            permission_choice = data.get(required_permission)
-            user_email = user_choice  # This test for email, must to generate
-            print(user_email)
-            user = get_object_or_404(User, email=user_email)
-            project = get_object_or_404(Project, pk=project_pk)
 
-            contributor = Contributor.objects.create(user=user, project=project, permission=permission_choice)
-            serializer = ContributorSerializer(contributor)
-            return Response(serializer.data)
-
-        else:
-            raise APIException("Must fill 'user_choice' and 'permission' fields!")
-
+        serializer = ContributorSerializer(data=data)
+        serializer.is_valid() # Why always False ???
+        # serializer.is_valid(raise_exception=True)
+        print(serializer.is_valid())
+        serializer = ContributorSerializer().create(validated_data=data, project=project)
+        return Response(serializer.data)
 
     def retrieve(self, request, pk=None, project_pk=None):
         queryset = User.objects.filter(pk=pk, projects=project_pk)
@@ -132,6 +111,12 @@ class IssueViewSet(viewsets.ModelViewSet):
 
 
     def list(self, request, project_pk=None):
+        project = get_object_or_404(Project, pk=project_pk)
+        issues = project.issues.all()
+        serializer = IssueSerializer(issues, many=True)
+        return Response(serializer.data)
+
+    def create(self, request, project_pk=None):
         project = get_object_or_404(Project, pk=project_pk)
         issues = project.issues.all()
         serializer = IssueSerializer(issues, many=True)

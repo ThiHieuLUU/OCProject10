@@ -1,5 +1,4 @@
 from django.shortcuts import get_object_or_404
-from django.utils.functional import lazy
 from rest_framework import serializers
 from .models import (
     Project,
@@ -12,35 +11,20 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-class DynamicFieldsModelSerializer(serializers.ModelSerializer):
-
-    def __init__(self, *args, **kwargs):
-        # Don't pass the 'fields' arg up to the superclass
-        fields = kwargs.pop('fields', None)
-
-        # Instantiate the superclass normally
-        super(DynamicFieldsModelSerializer, self).__init__(*args, **kwargs)
-
-        if fields is not None:
-            # Drop any fields that are not specified in the `fields` argument.
-            allowed = set(fields)
-            existing = set(self.fields.keys())
-            for field_name in existing - allowed:
-                self.fields.pop(field_name)
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'first_name', 'last_name', 'email')
+        fields = ['first_name', 'last_name', 'email']
 
 
-
-class ProjectSerializer(DynamicFieldsModelSerializer):
+class ProjectSerializer(serializers.ModelSerializer):
     users = UserSerializer(read_only=True, many=True) # Display User info for serialisation (Get, retrieve)
 
     class Meta:
         model = Project
-        fields = ['title', 'project_type', 'description', 'users']
+        fields = ['id', 'title', 'project_type', 'description', 'users']
+        read_only_fields = ['id']
 
 
 class IssueSerializer(serializers.ModelSerializer):
@@ -58,7 +42,7 @@ class IssueSerializer(serializers.ModelSerializer):
         depth = 2
 
 
-class CommentSerializer(DynamicFieldsModelSerializer):
+class CommentSerializer(serializers.ModelSerializer):
     author_user = UserSerializer(read_only=True)
     issue = IssueSerializer()
     class Meta:
@@ -68,26 +52,28 @@ class CommentSerializer(DynamicFieldsModelSerializer):
         # depth = 2
 
 
-def get_users():
-    users = User.objects.all()
-    # user_choices = [user.first_name + user.last_name for user in users]
-    user_choices = [user.email for user in users]
-    return user_choices
-
-class ContributorSerializer(DynamicFieldsModelSerializer):
+class ContributorSerializer(serializers.ModelSerializer):
+    # users = UserSerializer(many=True)
+    user = UserSerializer()
     class Meta:
         model = Contributor
-        fields = '__all__'
-        depth = 2
+        fields = ['user', 'permission']
+        read_on_fields = ['project', 'role']
+        # fields = '__all__'
+        # depth = 2
 
+    def create(self, validated_data, project):
+        user_data = validated_data['user']
+        user_email = user_data["email"]
+        user = get_object_or_404(User, email=user_email)
 
-class ContributorChoiceSerializer(serializers.Serializer):
-    user_choice = serializers.ChoiceField(choices=lazy(get_users, tuple)(), write_only=True)
-    permission = serializers.ChoiceField(choices=Contributor.ROLE_CHOICES)
+        permission = validated_data["permission"]
 
-    class Meta:
-        model = Contributor
-        fields = ['user_choice', 'permission']
+        contributor = Contributor.objects.create(project=project, user=user, permission=permission)
+        serializer = ContributorSerializer(contributor)
+        # return contributor
+        return serializer
+
 
 
 

@@ -4,38 +4,19 @@ Models contain:
 from django.contrib.auth import get_user_model
 from django.db import models
 
-# from django.contrib.auth import get_user_model
 User = get_user_model()
-
-# from softdesk_project.users.models import User
-# from django.apps import apps
-# User = apps.get_model('users', 'User')
-# from users.models import User
-
-# from django.conf import settings
-# User = settings.AUTH_USER_MODEL
-
-# from softdesk_project.users.models import User
-# from softdesk_project.users.models import User
-
 
 class Project(models.Model):
     title = models.CharField(max_length=128)
     description = models.TextField(max_length=2048, blank=True)
     project_type = models.CharField(max_length=32)  # type (back-end, front-end, iOS ou Android),
     users = models.ManyToManyField(User, through='Contributor', related_name='projects')
-    # users = models.ManyToManyField(User, through='Contributor', through_fields=('project', 'user'),
-    #     related_name='projects')
 
     def __str__(self):
         return f'Project title: {self.title}, type: {self.project_type}'
 
 
 class Contributor(models.Model):
-    # These fields tie to the roles!
-    # AUTHOR = 1
-    # MANAGER = 2
-    # CREATOR = 3
 
     ROLE_CHOICES = (
         ('AUTHOR', 'Author'),
@@ -51,8 +32,11 @@ class Contributor(models.Model):
     permission = models.CharField(max_length=10, choices=ROLE_CHOICES)
     role = models.CharField(max_length=32) # What is this?
 
+    class Meta:
+        unique_together = ('user', 'project',)
+
     def __str__(self):
-        return f'Contributor: user is {self.user}, project is {self.project}'
+        return f'id = {self.id}, Contributor: user is {self.user}, project is {self.project}'
 
 
 class Issue(models.Model):
