@@ -51,7 +51,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
             title=data["title"], description=data['description'], project_type=data["project_type"])
 
         new_project.save()
-        contributor = Contributor.objects.create(project=new_project, user=user, permission="Author")
+        contributor = Contributor.objects.create(project=new_project, user=user, permission="AUTHOR")  # Call permission
 
         # serializer = ProjectSerializer(new_project)
         serializer = ContributorSerializer(contributor)  # Display contributor serializer or project?
