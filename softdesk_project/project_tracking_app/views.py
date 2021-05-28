@@ -1,8 +1,11 @@
 from django.shortcuts import get_object_or_404
+from django.template.backends import django
 from rest_framework import generics, mixins
 
 from rest_framework import viewsets, status
 from rest_framework.response import Response
+from rest_framework.exceptions import APIException
+from django.db import IntegrityError
 
 from .models import (
     User,
@@ -46,7 +49,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
 
         contributor = serializer.save(user=request.user, permission=permission)
-        serializer = ContributorSerializer(contributor)  # Display contributor serializer or project?
+        serializer = ContributorSerializer(contributor)
 
         return Response(serializer.data)
 
@@ -72,16 +75,17 @@ class UserViewSet(
 
     def create(self, request, project_pk=None):
         # How to control input, e.g. must correspond to choice pre-defined?
-        project = get_object_or_404(Project, pk=project_pk)
-        data = request.data
+        try:
+            data = request.data
+            project_data = {"project": project_pk}
+            data = {**data, **project_data}
+            serializer = ContributorSerializer(data=data)
+            serializer.is_valid() # Why always False ???
+            serializer.errors
+            serializer.save()
+        except IntegrityError:
+            raise APIException("The user is already added to this project.")
 
-
-
-        serializer = ContributorSerializer(data=data)
-        serializer.is_valid() # Why always False ???
-        serializer.errors
-        # serializer.is_valid(raise_exception=True)
-        serializer = ContributorSerializer().create(validated_data=data, project=project)
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None, project_pk=None):
@@ -113,7 +117,10 @@ class IssueViewSet(viewsets.ModelViewSet):
     def create(self, request, project_pk=None):
         project = get_object_or_404(Project, pk=project_pk)
         issues = project.issues.all()
-        serializer = IssueSerializer(issues, many=True)
+        serializer = IssueSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.errors
+        serializer.save(project=project)
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None, project_pk=None):

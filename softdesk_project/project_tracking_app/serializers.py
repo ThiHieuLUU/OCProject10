@@ -32,8 +32,9 @@ class ProjectSerializer(serializers.ModelSerializer):
         return Project.objects.create(**validated_data)
 
     def save(self, user=None, permission=None):
-        project = self.create(self.validated_data)
-        contributor = Contributor.objects.create(project=project, user=user, permission=permission)
+        # project = self.create(self.validated_data)
+        # contributor = Contributor.objects.create(project=project, user=user, permission=permission)
+        contributor = super().save(**self.validated_data, user=user, permission=permission)
         return contributor
 
 
@@ -45,12 +46,24 @@ class IssueSerializer(serializers.ModelSerializer):
     author_user = UserSerializer()
     # assignee_user = models.ForeignKey(User, related_name='assignee_issues', on_delete=models.CASCADE)  # Default : author
     assignee_user = UserSerializer()
-    project = ProjectSerializer()
+    project = ProjectSerializer(read_only=True)
 
     class Meta:
         model = Issue
         fields = '__all__'
         depth = 2
+
+    def create(self, validated_data):
+        author_user_data = validated_data.pop("author_user")
+        author_user = get_object_or_404(User, **author_user_data)
+        assignee_user_data = validated_data.pop("assignee_user")
+        assignee_user = get_object_or_404(User, **assignee_user_data)
+        issue = Issue.objects.create(**validated_data, author_user=author_user, assignee_user=assignee_user)
+        return issue
+
+    def save(self, project=None):
+        issue = super().save(**self.validated_data, project=project)
+        return issue
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -68,22 +81,16 @@ class ContributorSerializer(serializers.ModelSerializer):
     user = UserSerializer()
     class Meta:
         model = Contributor
-        fields = ['user', 'permission']
+        fields = ['project', 'user', 'permission']
         read_on_fields = ['project', 'role']
         # fields = '__all__'
         # depth = 2
 
-    def create(self, validated_data, project):
-        user_data = validated_data['user']
-        user_email = user_data["email"]
-        user = get_object_or_404(User, email=user_email)
-
-        permission = validated_data["permission"]
-
-        contributor = Contributor.objects.create(project=project, user=user, permission=permission)
-        serializer = ContributorSerializer(contributor)
-        # return contributor
-        return serializer
+    def create(self, validated_data):
+        user_data = validated_data.pop('user')
+        user = get_object_or_404(User, **user_data)
+        contributor = Contributor.objects.create(**validated_data, user=user)
+        return contributor
 
 
 
