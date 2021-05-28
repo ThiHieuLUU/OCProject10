@@ -13,9 +13,11 @@ User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(required=False, allow_blank=True)  # To get is_valid = True for unique field (email here)
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email']
+        fields = ['id', 'first_name', 'last_name', 'email']
+        read_only_fields = ['id']
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -25,6 +27,15 @@ class ProjectSerializer(serializers.ModelSerializer):
         model = Project
         fields = ['id', 'title', 'project_type', 'description', 'users']
         read_only_fields = ['id']
+
+    def create(self, validated_data):
+        return Project.objects.create(**validated_data)
+
+    def save(self, user=None, permission=None):
+        project = self.create(self.validated_data)
+        contributor = Contributor.objects.create(project=project, user=user, permission=permission)
+        return contributor
+
 
 
 class IssueSerializer(serializers.ModelSerializer):

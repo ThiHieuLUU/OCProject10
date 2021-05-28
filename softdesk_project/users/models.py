@@ -49,8 +49,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     uid = models.UUIDField(unique=True, editable=False, default=uuid.uuid4, verbose_name='Public identifier')
     email = models.EmailField(unique=True)
-    first_name = models.CharField(max_length=30, blank=True)
-    last_name = models.CharField(max_length=50, blank=True)
+    #first_name = models.CharField(max_length=30, blank=True)
+    #last_name = models.CharField(max_length=50, blank=True)
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=50)
     date_joined = models.DateTimeField(auto_now_add=True)
     is_staff = models.BooleanField(default=False)  # Must have this field
     # is_active = models.BooleanField(default=False)

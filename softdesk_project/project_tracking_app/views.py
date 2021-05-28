@@ -41,19 +41,11 @@ class ProjectViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
-        # serializer = ProjectSerializer(data=request.data)
-        # serializer.is_valid(raise_exception=True)
+        permission = "AUTHOR"
+        serializer = ProjectSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        data = request.data
-        user = request.user
-
-        new_project = Project.objects.create(
-            title=data["title"], description=data['description'], project_type=data["project_type"])
-
-        new_project.save()
-        contributor = Contributor.objects.create(project=new_project, user=user, permission="AUTHOR")  # Call permission
-
-        # serializer = ProjectSerializer(new_project)
+        contributor = serializer.save(user=request.user, permission=permission)
         serializer = ContributorSerializer(contributor)  # Display contributor serializer or project?
 
         return Response(serializer.data)
@@ -83,10 +75,12 @@ class UserViewSet(
         project = get_object_or_404(Project, pk=project_pk)
         data = request.data
 
+
+
         serializer = ContributorSerializer(data=data)
         serializer.is_valid() # Why always False ???
+        serializer.errors
         # serializer.is_valid(raise_exception=True)
-        print(serializer.is_valid())
         serializer = ContributorSerializer().create(validated_data=data, project=project)
         return Response(serializer.data)
 
