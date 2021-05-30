@@ -61,28 +61,8 @@ class IssueSerializer(serializers.ModelSerializer):
         issue = Issue.objects.create(**validated_data, author_user=author_user, assignee_user=assignee_user)
         return issue
 
-    # def update(self, request, *args, **kwargs):
-    #     data = request.data
-    #
-    #     author_user_data = data.pop("author_user")
-    #     author_user = get_object_or_404(User, **author_user_data)
-    #
-    #     assignee_user_data = data.pop("assignee_user")
-    #     assignee_user = get_object_or_404(User, **assignee_user_data)
-    #
-    #     project = kwargs["instance"].project
-    #     super().update(request, project=project, *args, **kwargs)
-
-    # def save(self, project=None):
-    #     issue = super().save(**self.validated_data, project=project)
-    #     return issue
-
     def save(self, **kwargs):
-        author_user = kwargs["author_user"]
-
-        assignee_user = kwargs["assignee_user"]
-        project = kwargs["project"]
-        issue = super().save(**self.validated_data, project=project, author_user=author_user, assignee_user=assignee_user)
+        issue = super().save(**self.validated_data, **kwargs)
         return issue
 
 

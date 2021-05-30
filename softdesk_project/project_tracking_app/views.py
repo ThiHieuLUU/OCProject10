@@ -3,7 +3,6 @@ from django.template.backends import django
 from rest_framework import generics, mixins
 
 from rest_framework import viewsets, status
-from rest_framework.mixins import UpdateModelMixin
 from rest_framework.response import Response
 from rest_framework.exceptions import APIException
 from django.db import IntegrityError
@@ -101,7 +100,6 @@ class UserViewSet(
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-# class IssueViewSet(viewsets.ModelViewSet):
 class IssueViewSet(viewsets.GenericViewSet,
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
@@ -135,48 +133,6 @@ class IssueViewSet(viewsets.GenericViewSet,
         serializer = IssueSerializer(issue)
         return Response(serializer.data)
 
-    def put(self, request, project_pk=None, *args, **kwargs):
-        data = request.data
-
-        author_user_data = data.pop("author_user")
-        author_user = get_object_or_404(User, **author_user_data)
-
-        assignee_user_data = data.pop("assignee_user")
-        assignee_user = get_object_or_404(User, **assignee_user_data)
-
-        issue_pk = kwargs['pk']
-        issue = get_object_or_404(Issue, pk=issue_pk)
-        project = issue.project
-        mixins.UpdateModelMixin.update(request, project=project, *args, **kwargs)
-
-    # def update(self, request, project_pk=None):
-    #     project = get_object_or_404(Project, pk=project_pk)
-    #     serializer = IssueSerializer(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #     serializer.errors
-    #     serializer.save(project=project)
-    #     return Response(serializer.data)
-
-    # def put(self, request, *args, **kwargs):
-    #     data = request.dataserializer
-    #
-    #     author_user_data = data.pop("author_user")
-    #     author_user = get_object_or_404(User, **author_user_data)
-    #     assignee_user_data = data.pop("assignee_user")
-    #     assignee_user = get_object_or_404(User, **assignee_user_data)
-    #
-    #     project = data.pop("project")
-    #     project = get_object_or_404(User, **project)
-    #
-    #     serializer = IssueSerializer(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #
-    #     serializer.validated_data = {**data, "project": project, "author_user": author_user, "assignee_user": assignee_user}
-    #     serializer.save()
-    #
-    #     # return self.update(request, *args, **kwargs)
-    #     return self.partial_update(request, *args, **kwargs)
-    #
     def perform_update(self, serializer):
         data = serializer.validated_data
 
@@ -185,9 +141,7 @@ class IssueViewSet(viewsets.GenericViewSet,
 
         assignee_user_data = data.pop("assignee_user")
         assignee_user = get_object_or_404(User, **assignee_user_data)
-        project = serializer.instance.project
-        kwargs = {"project": project, "author_user": author_user, "assignee_user": assignee_user}
-        serializer.save(**kwargs)
+        serializer.save(author_user=author_user, assignee_user=assignee_user)
         print(serializer.data)
 
 
