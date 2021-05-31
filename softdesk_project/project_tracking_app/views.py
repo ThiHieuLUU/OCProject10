@@ -145,7 +145,12 @@ class IssueViewSet(viewsets.GenericViewSet,
         print(serializer.data)
 
 
-class CommentViewSet(viewsets.ModelViewSet):
+class CommentViewSet(viewsets.GenericViewSet,
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.UpdateModelMixin
+    ):
     """
     A viewset for viewing and editing comment instances.
     """
@@ -158,12 +163,20 @@ class CommentViewSet(viewsets.ModelViewSet):
         return comments
 
     def list(self, request, project_pk=None, issue_pk=None):
-        # issue = get_object_or_404(Issue, pk=issue_pk)
-        # comments = issue.comments.all()
         comments = self.get_queryset(project_pk, issue_pk)
-
         serializer = CommentSerializer(comments, many=True)
         return Response(serializer.data)
+
+    def create(self, request, project_pk=None, issue_pk=None):
+        issue = get_object_or_404(Issue, pk=issue_pk)
+        author_user = self.request.user
+        serializer = CommentSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.errors
+
+        serializer.save(author_user=author_user, issue=issue)
+        return Response(serializer.data)
+
 
     def retrieve(self, request, project_pk=None, issue_pk=None, pk=None):
         comments = self.get_queryset(project_pk, issue_pk)  # All comment of an issue

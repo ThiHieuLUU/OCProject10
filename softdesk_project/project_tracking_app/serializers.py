@@ -68,12 +68,21 @@ class IssueSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     author_user = UserSerializer(read_only=True)
-    issue = IssueSerializer()
+    # issue = IssueSerializer(read_only=True)
     class Meta:
         model = Comment
         fields = ['description', 'author_user', 'issue']
+        read_only_fields = ['author_user', 'issue']
         # fields = '__all__'
-        # depth = 2
+        depth = 1
+
+    def create(self, validated_data):
+        comment = Comment.objects.create(**validated_data)
+        return comment
+
+    def save(self, **kwargs):
+        comment = super().save(**self.validated_data, **kwargs)
+        return comment
 
 
 class ContributorSerializer(serializers.ModelSerializer):
