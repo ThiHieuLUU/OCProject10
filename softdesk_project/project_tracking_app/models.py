@@ -26,9 +26,7 @@ class Contributor(models.Model):
 
     user = models.ForeignKey(User, related_name='contributors', on_delete=models.CASCADE)
     project = models.ForeignKey(Project, related_name='contributors', on_delete=models.CASCADE)
-    # permission = models.PositiveSmallIntegerField(choices=ROLE_CHOICES, blank=True, default=AUTHOR)
 
-    # permission = models.CharField(max_length=200, choices=ROLE_CHOICES, default='Author')
     permission = models.CharField(max_length=10, choices=ROLE_CHOICES)
     role = models.CharField(max_length=32) # What is this?
 

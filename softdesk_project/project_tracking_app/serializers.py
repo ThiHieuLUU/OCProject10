@@ -32,20 +32,17 @@ class ProjectSerializer(serializers.ModelSerializer):
         return Project.objects.create(**self.validated_data)
 
 
-
 class IssueSerializer(serializers.ModelSerializer):
     tag = serializers.ChoiceField(choices=Issue.TAG_CHOICES)
     priority = serializers.ChoiceField(choices=Issue.PRIORITY_CHOICES)  # priority (LOW, MEDIUM or HIGH)
     status = serializers.ChoiceField(choices=Issue.STATUS_CHOICES) # status (To do, In progress or Completed)
     author_user = UserSerializer()
-    # assignee_user = models.ForeignKey(User, related_name='assignee_issues', on_delete=models.CASCADE)  # Default : author
     assignee_user = UserSerializer()
     project = ProjectSerializer(read_only=True)
 
     class Meta:
         model = Issue
         fields = '__all__'
-        # depth = 2
 
     def create(self, validated_data):
         author_user_data = validated_data.pop("author_user")
@@ -67,7 +64,6 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ['description', 'author_user', 'issue']
         read_only_fields = ['author_user', 'issue']
-        # fields = '__all__'
         depth = 1
 
     def create(self, validated_data):
@@ -80,14 +76,11 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class ContributorSerializer(serializers.ModelSerializer):
-    # users = UserSerializer(many=True)
     user = UserSerializer()
     class Meta:
         model = Contributor
         fields = ['project', 'user', 'permission']
         read_on_fields = ['project', 'role']
-        # fields = '__all__'
-        # depth = 2
 
     def create(self, validated_data):
         user_data = validated_data.pop('user')

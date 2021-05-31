@@ -1,6 +1,5 @@
 from django.shortcuts import get_object_or_404
-from django.template.backends import django
-from rest_framework import generics, mixins
+from rest_framework import mixins
 
 from rest_framework import viewsets, status
 from rest_framework.response import Response
@@ -67,7 +66,6 @@ class UserViewSet(
     serializer_class = UserSerializer
     queryset = User.objects.all()
 
-
     def list(self, request, project_pk=None):
         project = get_object_or_404(Project, pk=project_pk)
         users = project.users.all()
@@ -75,13 +73,12 @@ class UserViewSet(
         return Response(serializer.data)
 
     def create(self, request, project_pk=None):
-        # How to control input, e.g. must correspond to choice pre-defined?
         try:
             data = request.data
             project_data = {"project": project_pk}
             data = {**data, **project_data}
             serializer = ContributorSerializer(data=data)
-            serializer.is_valid() # Why always False ???
+            serializer.is_valid()  # Why always False ???
             serializer.errors
             serializer.save()
         except IntegrityError:
@@ -102,17 +99,16 @@ class UserViewSet(
 
 
 class IssueViewSet(viewsets.GenericViewSet,
-    mixins.ListModelMixin,
-    mixins.CreateModelMixin,
-    mixins.DestroyModelMixin,
-    mixins.UpdateModelMixin
+                   mixins.ListModelMixin,
+                   mixins.CreateModelMixin,
+                   mixins.DestroyModelMixin,
+                   mixins.UpdateModelMixin
                    ):
     """
     A viewset for viewing and editing issue instances.
     """
     serializer_class = IssueSerializer
     queryset = Issue.objects.all()
-
 
     def list(self, request, project_pk=None):
         project = get_object_or_404(Project, pk=project_pk)
@@ -143,15 +139,14 @@ class IssueViewSet(viewsets.GenericViewSet,
         assignee_user_data = data.pop("assignee_user")
         assignee_user = get_object_or_404(User, **assignee_user_data)
         serializer.save(author_user=author_user, assignee_user=assignee_user)
-        print(serializer.data)
 
 
 class CommentViewSet(viewsets.GenericViewSet,
-    mixins.ListModelMixin,
-    mixins.CreateModelMixin,
-    mixins.DestroyModelMixin,
-    mixins.UpdateModelMixin
-    ):
+                     mixins.ListModelMixin,
+                     mixins.CreateModelMixin,
+                     mixins.DestroyModelMixin,
+                     mixins.UpdateModelMixin
+                     ):
     """
     A viewset for viewing and editing comment instances.
     """
@@ -179,7 +174,6 @@ class CommentViewSet(viewsets.GenericViewSet,
 
         serializer.save(author_user=author_user, issue=issue)
         return Response(serializer.data)
-
 
     def retrieve(self, request, project_pk=None, issue_pk=None, pk=None):
         comment = get_object_or_404(Comment, issue=issue_pk, pk=pk)
