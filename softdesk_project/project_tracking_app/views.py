@@ -157,13 +157,15 @@ class CommentViewSet(viewsets.GenericViewSet,
     serializer_class = CommentSerializer
     queryset = Comment.objects.all()
 
-    def get_queryset(self, project_pk=None, issue_pk=None):
-        issue = get_object_or_404(Issue, pk=issue_pk)
-        comments = issue.comments.all()
-        return comments
+    # def get_queryset(self, project_pk=None, issue_pk=None):
+    #     issue = get_object_or_404(Issue, pk=issue_pk)
+    #     comments = issue.comments.all()
+    #     return comments
 
     def list(self, request, project_pk=None, issue_pk=None):
-        comments = self.get_queryset(project_pk, issue_pk)
+        issue = get_object_or_404(Issue, pk=issue_pk)
+        comments = issue.comments.all()
+        # comments = self.get_queryset(project_pk, issue_pk)
         serializer = CommentSerializer(comments, many=True)
         return Response(serializer.data)
 
@@ -179,11 +181,14 @@ class CommentViewSet(viewsets.GenericViewSet,
 
 
     def retrieve(self, request, project_pk=None, issue_pk=None, pk=None):
-        comments = self.get_queryset(project_pk, issue_pk)  # All comment of an issue
-        # queryset = Comment.objects.filter(pk=pk, project=project_pk)
-        comment = get_object_or_404(comments, pk=pk)
+        comment = get_object_or_404(Comment, issue=issue_pk, pk=pk)
         serializer = CommentSerializer(comment)
         return Response(serializer.data)
+
+    def destroy(self, request, project_pk=None, pk=None, issue_pk=None):
+        comment = get_object_or_404(Comment, issue=issue_pk, pk=pk)
+        comment.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ContributorViewSet(viewsets.ModelViewSet):
