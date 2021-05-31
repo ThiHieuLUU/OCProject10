@@ -28,14 +28,8 @@ class ProjectSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'project_type', 'description', 'users']
         read_only_fields = ['id']
 
-    def create(self, validated_data):
-        return Project.objects.create(**validated_data)
-
-    def save(self, user=None, permission=None):
-        # project = self.create(self.validated_data)
-        # contributor = Contributor.objects.create(project=project, user=user, permission=permission)
-        contributor = super().save(**self.validated_data, user=user, permission=permission)
-        return contributor
+    def create(self):
+        return Project.objects.create(**self.validated_data)
 
 
 

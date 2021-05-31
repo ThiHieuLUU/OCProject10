@@ -47,8 +47,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
         permission = "AUTHOR"
         serializer = ProjectSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        project = serializer.create()
 
-        contributor = serializer.save(user=request.user, permission=permission)
+        contributor = Contributor.objects.create(project=project, user=request.user, permission=permission)
         serializer = ContributorSerializer(contributor)
 
         return Response(serializer.data)
