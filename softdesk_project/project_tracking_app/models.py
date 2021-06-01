@@ -7,17 +7,9 @@ from django.db import models
 User = get_user_model()
 
 class Project(models.Model):
-    # type (back-end, front-end, iOS ou Android)
-    # TYPE_CHOICES = (
-    #     ('BACK-KEND', 'back-end'),
-    #     ('FRONT-END', 'front-end'),
-    #     ('IOS', 'iOs')
-    #     ('ANDROID', 'Android')
-    # )
     title = models.CharField(max_length=128)
     description = models.TextField(max_length=2048, blank=True)
     project_type = models.CharField(max_length=32)  # type (back-end, front-end, iOS ou Android),
-    # project_type = models.CharField(max_length=32, choices=TYPE_CHOICES, blank=True)  # type (back-end, front-end, iOS ou Android),
     users = models.ManyToManyField(User, through='Contributor', related_name='projects')
 
     def __str__(self):
@@ -70,8 +62,6 @@ class Issue(models.Model):
     priority = models.CharField(max_length=16, choices=PRIORITY_CHOICES, blank=True)  # priority (LOW, MEDIUM or HIGH)
     status = models.CharField(max_length=16, choices=STATUS_CHOICES, blank=True) # status (To do, In progress or Completed)
     author_user = models.ForeignKey(User, related_name='issues', on_delete=models.CASCADE)
-    # Do not put the same related name as which of author_user
-    # assignee_user = models.ForeignKey(User, related_name='assignee_issues', on_delete=models.CASCADE)  # Default : author
     assignee_user = models.ForeignKey(User, related_name='assignee_issues', default=author_user, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, related_name='issues', on_delete=models.CASCADE)  # ??? project_id : integer
     created_time = models.DateTimeField(auto_now_add=True)

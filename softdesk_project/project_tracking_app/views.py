@@ -31,20 +31,17 @@ class ProjectViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return self.request.user.projects.all()  # Only projects of authenticated user
 
-    # OK
     def list(self, request):
         queryset = self.get_queryset()
         serializer = ProjectSerializer(queryset, many=True)
         return Response(serializer.data)
 
-    # OK
     def retrieve(self, request, pk=None):
         queryset = self.get_queryset()
         project = get_object_or_404(queryset, pk=pk)
         serializer = ProjectSerializer(project)
         return Response(serializer.data)
 
-    # OK
     def create(self, request, *args, **kwargs):
         permission = "AUTHOR"
         serializer = ProjectSerializer(data=request.data)
@@ -122,12 +119,6 @@ class IssueViewSet(viewsets.GenericViewSet,
     """
     serializer_class = IssueSerializer
     queryset = Issue.objects.all()
-
-    # If set get_queryset, it doesn't work for update, retrieve
-    # def get_queryset(self, project_pk=None):
-    #     project = get_object_or_404(Project, pk=project_pk)
-    #     issues = project.issues.all()
-    #     return issues
 
     def list(self, request, project_pk=None):
         project = get_object_or_404(Project, pk=project_pk)
