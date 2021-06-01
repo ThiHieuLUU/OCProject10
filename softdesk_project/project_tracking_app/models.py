@@ -7,9 +7,17 @@ from django.db import models
 User = get_user_model()
 
 class Project(models.Model):
+    # type (back-end, front-end, iOS ou Android)
+    # TYPE_CHOICES = (
+    #     ('BACK-KEND', 'back-end'),
+    #     ('FRONT-END', 'front-end'),
+    #     ('IOS', 'iOs')
+    #     ('ANDROID', 'Android')
+    # )
     title = models.CharField(max_length=128)
     description = models.TextField(max_length=2048, blank=True)
     project_type = models.CharField(max_length=32)  # type (back-end, front-end, iOS ou Android),
+    # project_type = models.CharField(max_length=32, choices=TYPE_CHOICES, blank=True)  # type (back-end, front-end, iOS ou Android),
     users = models.ManyToManyField(User, through='Contributor', related_name='projects')
 
     def __str__(self):

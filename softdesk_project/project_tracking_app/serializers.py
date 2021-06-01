@@ -36,34 +36,35 @@ class IssueSerializer(serializers.ModelSerializer):
     tag = serializers.ChoiceField(choices=Issue.TAG_CHOICES)
     priority = serializers.ChoiceField(choices=Issue.PRIORITY_CHOICES)  # priority (LOW, MEDIUM or HIGH)
     status = serializers.ChoiceField(choices=Issue.STATUS_CHOICES) # status (To do, In progress or Completed)
-    author_user = UserSerializer()
+    author_user = UserSerializer(read_only=True)
     assignee_user = UserSerializer()
     project = ProjectSerializer(read_only=True)
 
     class Meta:
         model = Issue
-        fields = '__all__'
+        fields = ['id', 'tag', 'priority', 'status', 'author_user', 'assignee_user', 'project']
+        read_only_fields = ['id']
+
 
     def create(self, validated_data):
-        author_user_data = validated_data.pop("author_user")
-        author_user = get_object_or_404(User, **author_user_data)
         assignee_user_data = validated_data.pop("assignee_user")
         assignee_user = get_object_or_404(User, **assignee_user_data)
-        issue = Issue.objects.create(**validated_data, author_user=author_user, assignee_user=assignee_user)
+        issue = Issue.objects.create(**validated_data, assignee_user=assignee_user)
         return issue
 
     def save(self, **kwargs):
-        issue = super().save(**self.validated_data, **kwargs)
+        # issue = super().save(**self.validated_data, **kwargs)
+        issue = super().save(**kwargs)
         return issue
 
 
 class CommentSerializer(serializers.ModelSerializer):
     author_user = UserSerializer(read_only=True)
-    # issue = IssueSerializer(read_only=True)
+    issue = IssueSerializer(read_only=True)
     class Meta:
         model = Comment
-        fields = ['description', 'author_user', 'issue']
-        read_only_fields = ['author_user', 'issue']
+        fields = ['id', 'description', 'author_user', 'issue']
+        read_only_fields = ['id']
         depth = 1
 
     def create(self, validated_data):
@@ -74,19 +75,21 @@ class CommentSerializer(serializers.ModelSerializer):
         comment = super().save(**self.validated_data, **kwargs)
         return comment
 
-
 class ContributorSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
+    user = UserSerializer(read_only=True)
+    project = ProjectSerializer(read_only=True)
     class Meta:
         model = Contributor
         fields = ['project', 'user', 'permission']
-        read_on_fields = ['project', 'role']
+        read_on_fields = ['role']
 
     def create(self, validated_data):
-        user_data = validated_data.pop('user')
-        user = get_object_or_404(User, **user_data)
-        contributor = Contributor.objects.create(**validated_data, user=user)
+        contributor = Contributor.objects.create(**validated_data)
         return contributor
+
+    #  "Save" call "create" by adding **kwargs to validated_data
+    def save(self, **kwargs):
+        return super().save(**kwargs)
 
 
 
