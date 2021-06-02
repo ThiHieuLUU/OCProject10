@@ -28,8 +28,8 @@ class ProjectSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'project_type', 'description', 'users']
         read_only_fields = ['id']
 
-    def create(self):
-        return Project.objects.create(**self.validated_data)
+    def create(self, validated_data):
+        return Project.objects.create(**validated_data)
 
 
 class IssueSerializer(serializers.ModelSerializer):

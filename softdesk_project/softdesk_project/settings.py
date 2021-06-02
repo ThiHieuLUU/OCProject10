@@ -43,6 +43,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
+    # 'rules',
+    # replace 'rules' with:
+
+    'rules.apps.AutodiscoverRulesConfig',
     'users',
     'project_tracking_app',
 ]
@@ -141,6 +145,11 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
 }
+
+AUTHENTICATION_BACKENDS = (
+    'rules.permissions.ObjectPermissionBackend',
+    'django.contrib.auth.backends.ModelBackend',
+)
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000"

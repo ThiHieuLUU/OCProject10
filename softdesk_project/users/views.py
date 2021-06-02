@@ -17,7 +17,7 @@ class UserRegistrationView(APIView):
     serializer_class = UserRegistrationSerializer
     permission_classes = (AllowAny,)
 
-    def post(self, request):
+    def post(self, request, format=None):
         serializer = self.serializer_class(data=request.data)
         valid = serializer.is_valid(raise_exception=True)
 
@@ -39,7 +39,7 @@ class UserLoginView(APIView):
     serializer_class = UserLoginSerializer
     permission_classes = (AllowAny,)
 
-    def post(self, request):
+    def post(self, request, format=None):
         serializer = self.serializer_class(data=request.data)
         valid = serializer.is_valid(raise_exception=True)
 
@@ -63,11 +63,9 @@ class UserLoginView(APIView):
 
 class UserListView(APIView):
     serializer_class = UserListSerializer
-    # permission_classes = (IsAuthenticated,)
     permission_classes = (AllowAny,)
 
-    def get(self, request):
-        user = request.user
+    def get(self, request, format=None):
         users = User.objects.all()
         serializer = self.serializer_class(users, many=True)
         response = {
@@ -79,23 +77,3 @@ class UserListView(APIView):
         }
         return Response(response, status=status.HTTP_200_OK)
 
-    # def get(self, request):
-    #     user = request.user
-    #     if user.role != 1:
-    #         response = {
-    #             'success': False,
-    #             'status_code': status.HTTP_403_FORBIDDEN,
-    #             'message': 'You are not authorized to perform this action'
-    #         }
-    #         return Response(response, status.HTTP_403_FORBIDDEN)
-    #     else:
-    #         users = User.objects.all()
-    #         serializer = self.serializer_class(users, many=True)
-    #         response = {
-    #             'success': True,
-    #             'status_code': status.HTTP_200_OK,
-    #             'message': 'Successfully fetched users',
-    #             'users': serializer.data
-    #
-    #         }
-    #         return Response(response, status=status.HTTP_200_OK)

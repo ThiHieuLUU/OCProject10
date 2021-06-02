@@ -28,12 +28,6 @@ class UserLoginSerializer(serializers.Serializer):
     access = serializers.CharField(read_only=True)
     refresh = serializers.CharField(read_only=True)
 
-    def create(self, validated_date):
-        pass
-
-    def update(self, instance, validated_data):
-        pass
-
     def validate(self, data):
         email = data['email']
         password = data['password']
