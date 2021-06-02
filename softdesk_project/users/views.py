@@ -19,20 +19,19 @@ class UserRegistrationView(APIView):
 
     def post(self, request, format=None):
         serializer = self.serializer_class(data=request.data)
-        valid = serializer.is_valid(raise_exception=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
 
-        if valid:
-            serializer.save()
-            status_code = status.HTTP_201_CREATED
+        status_code = status.HTTP_201_CREATED
 
-            response = {
-                'success': True,
-                'statusCode': status_code,
-                'message': 'User successfully registered!',
-                'user': serializer.data
-            }
+        response = {
+            'success': True,
+            'statusCode': status_code,
+            'message': 'User successfully registered!',
+            'user': serializer.data
+        }
 
-            return Response(response, status=status_code)
+        return Response(response, status=status_code)
 
 
 class UserLoginView(APIView):
@@ -41,24 +40,21 @@ class UserLoginView(APIView):
 
     def post(self, request, format=None):
         serializer = self.serializer_class(data=request.data)
-        valid = serializer.is_valid(raise_exception=True)
+        serializer.is_valid(raise_exception=True)
+        status_code = status.HTTP_200_OK
 
-        if valid:
-            status_code = status.HTTP_200_OK
-
-            response = {
-                'success': True,
-                'statusCode': status_code,
-                'message': 'User logged in successfully',
-                'access': serializer.data['access'],
-                'refresh': serializer.data['refresh'],
-                'authenticatedUser': {
-                    'email': serializer.data['email'],
-                    # 'role': serializer.data['role']
-                }
+        response = {
+            'success': True,
+            'statusCode': status_code,
+            'message': 'User logged in successfully',
+            'access': serializer.data['access'],
+            'refresh': serializer.data['refresh'],
+            'authenticatedUser': {
+            'email': serializer.data['email'],
             }
+        }
 
-            return Response(response, status=status_code)
+        return Response(response, status=status_code)
 
 
 class UserListView(APIView):
