@@ -19,7 +19,7 @@ from .serializers import (
     CommentSerializer,
 )
 
-
+from .permissions import IssuePermission
 class ProjectViewSet(viewsets.ModelViewSet):
     """
     A viewset for viewing and editing project instances.
@@ -92,7 +92,7 @@ class IssueViewSet(viewsets.ModelViewSet):
     A viewset for viewing and editing issue instances.
     """
     serializer_class = IssueSerializer
-    # permission_classes = [IssuePermission]
+    permission_classes = [IssuePermission]
     # permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):

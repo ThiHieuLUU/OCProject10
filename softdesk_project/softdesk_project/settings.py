@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     # 'rules',
     # replace 'rules' with:
 
-    'rules.apps.AutodiscoverRulesConfig',
+    # 'rules.apps.AutodiscoverRulesConfig',
     'users',
     'project_tracking_app',
 ]
@@ -147,7 +147,7 @@ REST_FRAMEWORK = {
 }
 
 AUTHENTICATION_BACKENDS = (
-    'rules.permissions.ObjectPermissionBackend',
+    # 'rules.permissions.ObjectPermissionBackend',
     'django.contrib.auth.backends.ModelBackend',
 )
 
