@@ -105,7 +105,8 @@ class IssueViewSet(viewsets.ModelViewSet):
 
     def create(self, request, project_pk=None, *args, **kwargs):
         issues = self.get_queryset()  # issues of a given project with pk=project_pk
-        project = issues[0].project
+        # project = issues[0].project
+        project = get_object_or_404(Project, pk=project_pk)
         author_user = self.request.user
 
         serializer = IssueSerializer(data=request.data)
@@ -126,7 +127,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     A viewset for viewing and editing comment instances.
     """
     serializer_class = CommentSerializer
-    queryset = Comment.objects.all()
+    # queryset = Comment.objects.all()
 
     def get_queryset(self):
         projects = self.request.user.projects.all()
@@ -143,7 +144,9 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def create(self, request, project_pk=None, issue_pk=None, *args, **kwargs):
         comments = self.get_queryset()  # all comments of a given issue with pk=issue_pk
-        issue = comments[0].issue
+        # issue = comments[0].issue
+        issue = get_object_or_404(Issue, pk=issue_pk)
+
 
         author_user = self.request.user
         serializer = CommentSerializer(data=request.data)
