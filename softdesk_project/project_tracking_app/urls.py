@@ -4,7 +4,6 @@ from .views import (
     ProjectViewSet,
     IssueViewSet,
     CommentViewSet,
-    ContributorViewSet,
     ProjectUserViewSet,
 )
 
@@ -26,7 +25,6 @@ issues_router.register(r'comments', CommentViewSet, basename='comments')
 # Generate: /viewset/projects/{project_pk}/issues/{issue_pk}/comments/{comment_pk}
 
 
-router.register(r'contributors', ContributorViewSet, basename='contributors')
 # Generate: /viewset/projects/
 # Generate: /viewset/projects/{project_pk}
 
