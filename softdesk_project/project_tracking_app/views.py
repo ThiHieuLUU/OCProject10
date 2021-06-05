@@ -19,15 +19,15 @@ from .serializers import (
     CommentSerializer,
 )
 # from .permissions import IsAuthorOrReadPostOnly, IsAuthorOrReadPostOnlyProject, IsAuthorOrReadPostOnlyUser, IssuePermission
-from .permissions import IsAuthorOrReadPostOnlyProject, IsAuthorOrReadPostOnlyUser, IssuePermission, CommentPermission
+from .permissions import IsAuthorOrReadPostOnlyUser, IssuePermission, CommentPermission
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
     """
     A viewset for viewing and editing project instances.
+    The permission is determined via get_queryset.
     """
     serializer_class = ProjectSerializer
-    permission_classes = [IsAuthorOrReadPostOnlyProject]
 
     def get_queryset(self):
         return self.request.user.projects.all()  # Only projects of authenticated user
@@ -47,14 +47,17 @@ class ProjectViewSet(viewsets.ModelViewSet):
 class ProjectUserViewSet(
     viewsets.GenericViewSet,
     mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
 ):
     # class ProjectUserViewSet(viewsets.ModelViewSet):
     """
     A viewset for viewing and editing issue instances.
+    the endpoint kind: /projects/, /projects/{id}/
+    get_queryset method and get_object method allow to check permission for GET, DELETE method.
+    "POST" method is needed to check permission by class IsAuthorOrReadPostOnlyUser
     """
-    # permission_classes = [IsAuthorOrReadPostOnly]
     serializer_class = UserSerializer
     permission_classes = [IsAuthorOrReadPostOnlyUser]
 
@@ -72,22 +75,22 @@ class ProjectUserViewSet(
         return obj
 
     def create(self, request, project_pk=None, *args, **kwargs):
-        users = self.get_queryset()
+        users = self.get_queryset()  # Also check nested relationship in url
         data = request.data
 
         user_data = data.pop('user')
         user_serializer = UserSerializer(data=user_data)
-        user_serializer.is_valid()
+        user_serializer.is_valid(raise_exception=True)
         user = get_object_or_404(User, **user_serializer.data)
 
         project = Project.objects.get(pk=project_pk)
 
         if user in users:
-            raise APIException("This user is already added to the project")
+            raise APIException("This user is already added to the project.")
 
         permission = data.get("permission")
         if permission == 'AUTHOR':
-            raise APIException("Select another permission except AUTHOR")
+            raise APIException("Select another permission except AUTHOR.")
 
         serializer = ContributorSerializer(data=data)  # data has popped user data
         serializer.is_valid(raise_exception=True)
@@ -96,7 +99,7 @@ class ProjectUserViewSet(
         return Response(serializer.data)
 
     def destroy(self, request, project_pk=None, pk=None, *args, **kwargs):
-        user = self.get_object()
+        user = self.get_object()  # Which allows also to call has_object_permission, otherwise it will not be checked.
 
         projects = user.projects.all()
         project = get_object_or_404(projects, pk=project_pk)
