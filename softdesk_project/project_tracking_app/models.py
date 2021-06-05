@@ -7,6 +7,7 @@ from django.db import models
 User = get_user_model()
 
 class Project(models.Model):
+    # objects = None
     title = models.CharField(max_length=128)
     description = models.TextField(max_length=2048, blank=True)
     project_type = models.CharField(max_length=32)  # type (back-end, front-end, iOS ou Android),

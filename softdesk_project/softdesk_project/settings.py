@@ -146,10 +146,10 @@ REST_FRAMEWORK = {
     )
 }
 
-AUTHENTICATION_BACKENDS = (
-    # 'rules.permissions.ObjectPermissionBackend',
-    'django.contrib.auth.backends.ModelBackend',
-)
+# AUTHENTICATION_BACKENDS = (
+#     # 'rules.permissions.ObjectPermissionBackend',
+#     'django.contrib.auth.backends.ModelBackend',
+# )
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000"

@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, mixins
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.exceptions import APIException
@@ -18,13 +18,16 @@ from .serializers import (
     IssueSerializer,
     CommentSerializer,
 )
+# from .permissions import IsAuthorOrReadPostOnly, IsAuthorOrReadPostOnlyProject, IsAuthorOrReadPostOnlyUser, IssuePermission
+from .permissions import IsAuthorOrReadPostOnlyProject, IsAuthorOrReadPostOnlyUser, IssuePermission, CommentPermission
 
-from .permissions import IssuePermission
+
 class ProjectViewSet(viewsets.ModelViewSet):
     """
     A viewset for viewing and editing project instances.
     """
     serializer_class = ProjectSerializer
+    permission_classes = [IsAuthorOrReadPostOnlyProject]
 
     def get_queryset(self):
         return self.request.user.projects.all()  # Only projects of authenticated user
@@ -41,11 +44,19 @@ class ProjectViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class ProjectUserViewSet(viewsets.ModelViewSet):
+class ProjectUserViewSet(
+    viewsets.GenericViewSet,
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+):
+    # class ProjectUserViewSet(viewsets.ModelViewSet):
     """
     A viewset for viewing and editing issue instances.
     """
+    # permission_classes = [IsAuthorOrReadPostOnly]
     serializer_class = UserSerializer
+    permission_classes = [IsAuthorOrReadPostOnlyUser]
 
     def get_queryset(self):
         projects = self.request.user.projects.all()
@@ -54,6 +65,11 @@ class ProjectUserViewSet(viewsets.ModelViewSet):
         project = get_object_or_404(projects, pk=project_pk)
         users = project.users.all()
         return users
+
+    def get_object(self):
+        obj = get_object_or_404(self.get_queryset(), pk=self.kwargs["pk"])
+        self.check_object_permissions(self.request, obj)
+        return obj
 
     def create(self, request, project_pk=None, *args, **kwargs):
         users = self.get_queryset()
@@ -69,6 +85,10 @@ class ProjectUserViewSet(viewsets.ModelViewSet):
         if user in users:
             raise APIException("This user is already added to the project")
 
+        permission = data.get("permission")
+        if permission == 'AUTHOR':
+            raise APIException("Select another permission except AUTHOR")
+
         serializer = ContributorSerializer(data=data)  # data has popped user data
         serializer.is_valid(raise_exception=True)
         serializer.save(user=user, project=project)
@@ -76,8 +96,7 @@ class ProjectUserViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def destroy(self, request, project_pk=None, pk=None, *args, **kwargs):
-        users = self.get_queryset()
-        user = get_object_or_404(users, pk=pk)
+        user = self.get_object()
 
         projects = user.projects.all()
         project = get_object_or_404(projects, pk=project_pk)
@@ -92,20 +111,29 @@ class IssueViewSet(viewsets.ModelViewSet):
     A viewset for viewing and editing issue instances.
     """
     serializer_class = IssueSerializer
+    # permission_classes = [IsAuthorOrReadPostOnly]
+
     permission_classes = [IssuePermission]
+
     # permission_classes = [IsAuthenticatedOrReadOnly]
 
-    def get_queryset(self):
+    def get_project_object_in_endpoint(self):
+        """ Get the project in the endpoint and also define/check the permission of nested relationship"""
         projects = self.request.user.projects.all()
         project_pk = self.kwargs["project_pk"]
         project = get_object_or_404(projects, pk=project_pk)
+        return project
 
+    def get_queryset(self):
+        # project = self.get_project_object_in_endpoint()
+        projects = self.request.user.projects.all()
+        project_pk = self.kwargs["project_pk"]
+        project = get_object_or_404(projects, pk=project_pk)
         issues = project.issues.all()
         return issues
 
     def create(self, request, project_pk=None, *args, **kwargs):
-        issues = self.get_queryset()  # issues of a given project with pk=project_pk
-        # project = issues[0].project
+        # project = self.get_project_object_in_endpoint()
         project = get_object_or_404(Project, pk=project_pk)
         author_user = self.request.user
 
@@ -127,6 +155,8 @@ class CommentViewSet(viewsets.ModelViewSet):
     A viewset for viewing and editing comment instances.
     """
     serializer_class = CommentSerializer
+    permission_classes = [CommentPermission]
+
     # queryset = Comment.objects.all()
 
     def get_queryset(self):
@@ -141,16 +171,13 @@ class CommentViewSet(viewsets.ModelViewSet):
         comments = issue.comments.all()
         return comments
 
-
     def create(self, request, project_pk=None, issue_pk=None, *args, **kwargs):
-        comments = self.get_queryset()  # all comments of a given issue with pk=issue_pk
-        # issue = comments[0].issue
+        # comments = self.get_queryset()  # all comments of a given issue with pk=issue_pk
+        # # issue = comments[0].issue
         issue = get_object_or_404(Issue, pk=issue_pk)
-
 
         author_user = self.request.user
         serializer = CommentSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(author_user=author_user, issue=issue)
         return Response(serializer.data)
-
