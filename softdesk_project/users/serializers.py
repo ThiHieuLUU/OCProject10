@@ -1,3 +1,5 @@
+"""Serializers for user model in users app."""
+
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import update_last_login
 
@@ -8,6 +10,8 @@ from .models import User
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
+    """Serializer is used for signup step."""
+
     class Meta:
         model = User
         fields = (
@@ -23,6 +27,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 
 class UserLoginSerializer(serializers.Serializer):
+    """Serializer is used for login step."""
+
     email = serializers.EmailField()
     password = serializers.CharField(max_length=128, write_only=True)
     access = serializers.CharField(read_only=True)
@@ -52,9 +58,3 @@ class UserLoginSerializer(serializers.Serializer):
             return validation
         except User.DoesNotExist:
             raise serializers.ValidationError("Invalid login credentials")
-
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('id', 'first_name', 'last_name', 'email')

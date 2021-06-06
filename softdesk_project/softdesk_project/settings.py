@@ -42,11 +42,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'corsheaders',
-    # 'rules',
-    # replace 'rules' with:
-
-    # 'rules.apps.AutodiscoverRulesConfig',
     'users',
     'project_tracking_app',
 ]
@@ -146,17 +141,9 @@ REST_FRAMEWORK = {
     )
 }
 
-# AUTHENTICATION_BACKENDS = (
-#     # 'rules.permissions.ObjectPermissionBackend',
-#     'django.contrib.auth.backends.ModelBackend',
-# )
-
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000"
-]
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30), # For test, to change : 5, 10
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),  # For test, to change : 5, 10
     'REFRESH_TOKEN_LIFETIME': timedelta(days=10),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,

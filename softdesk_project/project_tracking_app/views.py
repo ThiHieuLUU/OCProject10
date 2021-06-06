@@ -1,6 +1,8 @@
+"""API Views for different requests about user, project, issue and comment.
+"""
+
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status, mixins
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.exceptions import APIException
 
@@ -9,7 +11,6 @@ from .models import (
     Project,
     Contributor,
     Issue,
-    Comment,
 )
 from .serializers import (
     UserSerializer,
@@ -18,21 +19,25 @@ from .serializers import (
     IssueSerializer,
     CommentSerializer,
 )
-# from .permissions import IsAuthorOrReadPostOnly, IsAuthorOrReadPostOnlyProject, IsAuthorOrReadPostOnlyUser, IssuePermission
 from .permissions import IsAuthorOrReadPostOnlyUser, IssuePermission, CommentPermission
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
     """
     A viewset for viewing and editing project instances.
-    The permission is determined via get_queryset.
+    - The type of endpoints: /projects/ or /projects/{id}
+    - The permission is determined and all satisfied via get_queryset method.
     """
     serializer_class = ProjectSerializer
 
     def get_queryset(self):
+        """Define a set of projects to which the authenticated user can access."""
+
         return self.request.user.projects.all()  # Only projects of authenticated user
 
     def create(self, request, *args, **kwargs):
+        """The authenticated user creates a new project."""
+
         permission = "AUTHOR"
         serializer = ProjectSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -51,17 +56,20 @@ class ProjectUserViewSet(
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
 ):
-    # class ProjectUserViewSet(viewsets.ModelViewSet):
     """
-    A viewset for viewing and editing issue instances.
-    the endpoint kind: /projects/, /projects/{id}/
-    get_queryset method and get_object method allow to check permission for GET, DELETE method.
-    "POST" method is needed to check permission by class IsAuthorOrReadPostOnlyUser
+    A viewset for viewing, adding and deleting a contributor for a given project.
+    - The type of endpoints: /projects/{id}/users or /projects/{id}/users/{id}
+    - get_queryset method and get_object method allow to check permission for GET, DELETE request.
+    - "POST" request is needed to check permission.
+    - "PUT" request is not allowed here (can't modify user's information).
     """
+
     serializer_class = UserSerializer
     permission_classes = [IsAuthorOrReadPostOnlyUser]
 
     def get_queryset(self):
+        """Define a set of users associated with a project determined via an endpoint."""
+
         projects = self.request.user.projects.all()
         project_pk = self.kwargs["project_pk"]
 
@@ -70,11 +78,15 @@ class ProjectUserViewSet(
         return users
 
     def get_object(self):
+        """Get a contributor via its id and check permission that authenticated user can do with this contributor."""
+
         obj = get_object_or_404(self.get_queryset(), pk=self.kwargs["pk"])
         self.check_object_permissions(self.request, obj)
         return obj
 
     def create(self, request, project_pk=None, *args, **kwargs):
+        """The authenticated user adds a new contributor to a project."""
+
         users = self.get_queryset()  # Also check nested relationship in url
         data = request.data
 
@@ -99,7 +111,9 @@ class ProjectUserViewSet(
         return Response(serializer.data)
 
     def destroy(self, request, project_pk=None, pk=None, *args, **kwargs):
-        user = self.get_object()  # Which allows also to call has_object_permission, otherwise it will not be checked.
+        """The authenticated user deletes a user associated with a project (delete a contributor)."""
+
+        user = self.get_object()  # This also allows to call has_object_permission, otherwise it will not be checked.
 
         projects = user.projects.all()
         project = get_object_or_404(projects, pk=project_pk)
@@ -112,23 +126,17 @@ class ProjectUserViewSet(
 class IssueViewSet(viewsets.ModelViewSet):
     """
     A viewset for viewing and editing issue instances.
+    - The type of endpoints: /projects/{id}/issues or /projects/{id}/issues/{id}
+    - get_queryset method and get_object method allow to check permission for GET, DELETE request.
+    - "POST" method is needed to check permission.
+    - "PUT" and 'DELETE' methods are needed to check author permission for an issue.
     """
     serializer_class = IssueSerializer
-    # permission_classes = [IsAuthorOrReadPostOnly]
-
     permission_classes = [IssuePermission]
 
-    # permission_classes = [IsAuthenticatedOrReadOnly]
-
-    def get_project_object_in_endpoint(self):
-        """ Get the project in the endpoint and also define/check the permission of nested relationship"""
-        projects = self.request.user.projects.all()
-        project_pk = self.kwargs["project_pk"]
-        project = get_object_or_404(projects, pk=project_pk)
-        return project
-
     def get_queryset(self):
-        # project = self.get_project_object_in_endpoint()
+        """Define a set of issues associated with a project determined via an endpoint."""
+
         projects = self.request.user.projects.all()
         project_pk = self.kwargs["project_pk"]
         project = get_object_or_404(projects, pk=project_pk)
@@ -136,7 +144,8 @@ class IssueViewSet(viewsets.ModelViewSet):
         return issues
 
     def create(self, request, project_pk=None, *args, **kwargs):
-        # project = self.get_project_object_in_endpoint()
+        """The authenticated user adds a new issue to a project."""
+
         project = get_object_or_404(Project, pk=project_pk)
         author_user = self.request.user
 
@@ -146,6 +155,8 @@ class IssueViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def perform_update(self, serializer):
+        """The authenticated user updates an issue (permission: the user is also author of the issue)."""
+
         data = serializer.validated_data
 
         assignee_user_data = data.pop("assignee_user")
@@ -156,13 +167,18 @@ class IssueViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     """
     A viewset for viewing and editing comment instances.
+    - The type of endpoints: /projects/{id}/issues/comments/ or /projects/{id}/issues/{id}/comments/{id}
+    - get_queryset method and get_object method allow to check permission for GET, DELETE request.
+    - "POST" request is needed to check permission.
+    - "PUT" and 'DELETE' request are needed to check author permission for a comment.
     """
+
     serializer_class = CommentSerializer
     permission_classes = [CommentPermission]
 
-    # queryset = Comment.objects.all()
-
     def get_queryset(self):
+        """Define a set of comments associated with an issue determined via an endpoint."""
+
         projects = self.request.user.projects.all()
         project_pk = self.kwargs["project_pk"]
         project = get_object_or_404(projects, pk=project_pk)
@@ -175,10 +191,9 @@ class CommentViewSet(viewsets.ModelViewSet):
         return comments
 
     def create(self, request, project_pk=None, issue_pk=None, *args, **kwargs):
-        # comments = self.get_queryset()  # all comments of a given issue with pk=issue_pk
-        # # issue = comments[0].issue
-        issue = get_object_or_404(Issue, pk=issue_pk)
+        """The authenticated user adds a new comment to an issue."""
 
+        issue = get_object_or_404(Issue, pk=issue_pk)
         author_user = self.request.user
         serializer = CommentSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

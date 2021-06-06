@@ -1,3 +1,5 @@
+"""Serializers for model in project tracking app ."""
+
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from .models import (
@@ -7,15 +9,17 @@ from .models import (
     Comment,
 )
 
-
-
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(required=False, allow_blank=True)  # To get is_valid = True for unique field (email here)
+    """Serializer is used for a user."""
+
+    email = serializers.EmailField(required=False,
+                                   allow_blank=True)  # To get is_valid = True for unique field (email here)
+
     class Meta:
         model = User
         fields = ['id', 'first_name', 'last_name', 'email']
@@ -23,7 +27,9 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class ProjectSerializer(serializers.ModelSerializer):
-    users = UserSerializer(read_only=True, many=True) # Display User info for serialisation (Get, retrieve)
+    """Serializer is used for a project."""
+
+    users = UserSerializer(read_only=True, many=True)
 
     class Meta:
         model = Project
@@ -31,13 +37,40 @@ class ProjectSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
 
     def create(self, validated_data):
+        """Override create method."""
+
         return Project.objects.create(**validated_data)
 
 
+class ContributorSerializer(serializers.ModelSerializer):
+    """Serializer is used for a contributor."""
+
+    user = UserSerializer(read_only=True)
+    project = ProjectSerializer(read_only=True)
+
+    class Meta:
+        model = Contributor
+        fields = ['project', 'user', 'permission']
+        read_on_fields = ['role']
+
+    def create(self, validated_data):
+        """Override create method."""
+
+        contributor = Contributor.objects.create(**validated_data)
+        return contributor
+
+    def save(self, **kwargs):  # "save" method calls "create" method by adding **kwargs to validated_data
+        """Override save method."""
+
+        return super().save(**kwargs)
+
+
 class IssueSerializer(serializers.ModelSerializer):
+    """Serializer is used for an issue."""
+
     tag = serializers.ChoiceField(choices=Issue.TAG_CHOICES)
     priority = serializers.ChoiceField(choices=Issue.PRIORITY_CHOICES)  # priority (LOW, MEDIUM or HIGH)
-    status = serializers.ChoiceField(choices=Issue.STATUS_CHOICES) # status (To do, In progress or Completed)
+    status = serializers.ChoiceField(choices=Issue.STATUS_CHOICES)  # status (To do, In progress or Completed)
     author_user = UserSerializer(read_only=True)
     assignee_user = UserSerializer()
     project = ProjectSerializer(read_only=True)
@@ -47,22 +80,27 @@ class IssueSerializer(serializers.ModelSerializer):
         fields = ['id', 'tag', 'priority', 'status', 'author_user', 'assignee_user', 'project']
         read_only_fields = ['id']
 
-
     def create(self, validated_data):
+        """Override create method."""
+
         assignee_user_data = validated_data.pop("assignee_user")
         assignee_user = get_object_or_404(User, **assignee_user_data)
         issue = Issue.objects.create(**validated_data, assignee_user=assignee_user)
         return issue
 
     def save(self, **kwargs):
+        """Override save method."""
         # issue = super().save(**self.validated_data, **kwargs)
         issue = super().save(**kwargs)
         return issue
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    """Serializer is used for a comment."""
+
     author_user = UserSerializer(read_only=True)
     issue = IssueSerializer(read_only=True)
+
     class Meta:
         model = Comment
         fields = ['id', 'description', 'author_user', 'issue']
@@ -70,29 +108,13 @@ class CommentSerializer(serializers.ModelSerializer):
         depth = 1
 
     def create(self, validated_data):
+        """Override create method."""
+
         comment = Comment.objects.create(**validated_data)
         return comment
 
     def save(self, **kwargs):
+        """Override save method."""
+
         comment = super().save(**self.validated_data, **kwargs)
         return comment
-
-class ContributorSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
-    project = ProjectSerializer(read_only=True)
-    class Meta:
-        model = Contributor
-        fields = ['project', 'user', 'permission']
-        read_on_fields = ['role']
-
-    def create(self, validated_data):
-        contributor = Contributor.objects.create(**validated_data)
-        return contributor
-
-    #  "Save" call "create" by adding **kwargs to validated_data
-    def save(self, **kwargs):
-        return super().save(**kwargs)
-
-
-
-

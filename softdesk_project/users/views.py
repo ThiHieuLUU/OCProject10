@@ -1,4 +1,5 @@
-from django.shortcuts import render
+"""Views for signup or login process of a user."""
+
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -11,6 +12,8 @@ from .serializers import (
 
 
 class UserRegistrationView(APIView):
+    """Views for signup process."""
+
     serializer_class = UserRegistrationSerializer
     permission_classes = (AllowAny,)
 
@@ -32,6 +35,8 @@ class UserRegistrationView(APIView):
 
 
 class UserLoginView(APIView):
+    """Views for login process."""
+
     serializer_class = UserLoginSerializer
     permission_classes = (AllowAny,)
 
@@ -47,9 +52,8 @@ class UserLoginView(APIView):
             'access': serializer.data['access'],
             'refresh': serializer.data['refresh'],
             'authenticatedUser': {
-            'email': serializer.data['email'],
+                'email': serializer.data['email'],
             }
         }
 
         return Response(response, status=status_code)
-
