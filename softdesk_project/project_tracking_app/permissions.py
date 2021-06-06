@@ -89,7 +89,7 @@ class IssuePermission(BasePermission, UserRole):
         Return `True` if permission is granted, `False` otherwise.
         """
         if request.method == "POST":
-            self.message = f"Only contributor of the project can post an issue."
+            self.message = "Only contributor of the project can post an issue."
             return UserRole().is_contributor(request, view)
         return True
 
@@ -132,7 +132,7 @@ class CommentPermission(BasePermission, UserRole):
             if not self.check_endpoint_for_post_method(request, view):
                 self.message = "Project hasn't this issue."
             if not UserRole().is_contributor(request, view):
-                self.message = f"Only contributor of the project can post a comment."
+                self.message = "Only contributor of the project can post a comment."
             return self.check_endpoint_for_post_method(request, view) and UserRole().is_contributor(request, view)
 
         return True

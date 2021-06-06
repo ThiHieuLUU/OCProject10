@@ -5,8 +5,9 @@ from django.utils.translation import ugettext_lazy as _
 class CustomUserManager(BaseUserManager):
     """
     Custom user model where the email address is the unique identifier
-    and has an is_admin field to allow access to the admin app 
+    and has an is_admin field to allow access to the admin app.
     """
+
     def create_user(self, email, password, **extra_fields):
         if not email:
             raise ValueError(_("The email must be set"))
