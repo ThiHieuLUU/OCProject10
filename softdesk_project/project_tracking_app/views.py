@@ -19,21 +19,28 @@ from .serializers import (
     IssueSerializer,
     CommentSerializer,
 )
-from .permissions import IsAuthorOrReadPostOnlyUser, IssuePermission, CommentPermission
+from .permissions import (
+    IsAuthorOrReadPostOnlyProject,
+    IsAuthorOrReadPostOnlyUser,
+    IssuePermission,
+    CommentPermission,
+)
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
     """
     A viewset for viewing and editing project instances.
     - The type of endpoints: /projects/ or /projects/{id}
-    - The permission is determined and all satisfied via get_queryset method.
+    - "GET", "POST" request's permission are satisfied via get_queryset method.
+    - "DELETE", "PUT" requests are needed to check author project permission.
     """
     serializer_class = ProjectSerializer
+    permission_classes = [IsAuthorOrReadPostOnlyProject]
 
     def get_queryset(self):
         """Define a set of projects to which the authenticated user can access."""
 
-        return self.request.user.projects.all()  # Only projects of authenticated user
+        return self.request.user.projects.all()  # Only projects of which the authenticated user is contributor.
 
     def create(self, request, *args, **kwargs):
         """The authenticated user creates a new project."""
@@ -59,8 +66,9 @@ class ProjectUserViewSet(
     """
     A viewset for viewing, adding and deleting a contributor for a given project.
     - The type of endpoints: /projects/{id}/users or /projects/{id}/users/{id}
-    - get_queryset method and get_object method allow to check permission for GET, DELETE request.
+    - get_queryset method and get_object method allow to check permission for GET request.
     - "POST" request is needed to check permission.
+    - "DELETE" request is needed to check author project permission.
     - "PUT" request is not allowed here (can't modify user's information).
     """
 

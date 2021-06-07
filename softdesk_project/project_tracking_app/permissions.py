@@ -27,6 +27,12 @@ class UserRole:
         if type(obj) is Project:
             contributor = get_object_or_404(Contributor, user=request.user, project=obj)
             return contributor.permission == "AUTHOR"
+        if type(obj) is User:
+            project_pk = view.kwargs['project_pk']
+            project = get_object_or_404(Project, pk=project_pk)
+            contributor = get_object_or_404(Contributor, user=request.user, project=project)
+            return contributor.permission == "AUTHOR"
+
         if type(obj) in [Issue, Comment]:
             return request.user == obj.author_user
 
@@ -58,6 +64,17 @@ class EndpointNestedRelation:
         return obj1 == object_type_klass1_from_obj2
 
 
+class IsAuthorOrReadPostOnlyProject(BasePermission):
+    message = 'You have no permission for this request.'
+
+    def has_object_permission(self, request, view, obj):
+        """Override has_object_permission method to treat the PUT and DELETE methods."""
+
+        if request.method in SAFE_METHODS:
+            return True
+        return UserRole().is_author(request, view, obj)
+
+
 class IsAuthorOrReadPostOnlyUser(BasePermission):
     """This permission controls the type of endpoints: /projects/{id}/users/ or /projects/{id}/users/{id}.
     get_queryset method already checks permission for GET/DELETE methods.
@@ -69,8 +86,16 @@ class IsAuthorOrReadPostOnlyUser(BasePermission):
         """Override has_permission method to treat the POST method."""
 
         if request.method == "POST":
+            self.message = "Project doesn't exist or you aren't a contributor of the project."
             return UserRole().is_contributor(request, view)
         return True
+
+    def has_object_permission(self, request, view, obj):
+        """Override has_object_permission method to treat the PUT and DELETE methods."""
+
+        if request.method in SAFE_METHODS:
+            return True
+        return UserRole().is_author(request, view, obj)
 
 
 class IssuePermission(BasePermission, UserRole):
