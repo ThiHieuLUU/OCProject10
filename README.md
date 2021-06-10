@@ -62,3 +62,17 @@ python manage.py runserver
 ```
 Then go to http://127.0.0.1:8000/ and send request for different endpoints.
 
+2. Check code with flake8
+* See flake8 configuration in "setup.cfg" file.
+* Check code in reviews application
+```bash
+cd reviews
+flake8 --format=html --htmldir=flake8-rapport
+```
+* Result:
+```bash
+firefox flake8-rapport/index.html &
+```
+
+## 5. Postman documentation
+See [here](https://www.postman.com/hieuluu/workspace/project-tracking-app/collection/15764425-c96c0004-74be-45c0-8dc8-9938049e756a?ctx=documentation) for Postman documentation of this API.
