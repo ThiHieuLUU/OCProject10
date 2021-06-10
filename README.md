@@ -66,7 +66,7 @@ Then go to http://127.0.0.1:8000/ and send request for different endpoints.
 * See flake8 configuration in "setup.cfg" file.
 * Check code in reviews application
 ```bash
-cd reviews
+cd softdesk_project
 flake8 --format=html --htmldir=flake8-rapport
 ```
 * Result:
