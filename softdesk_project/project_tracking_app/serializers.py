@@ -68,16 +68,13 @@ class ContributorSerializer(serializers.ModelSerializer):
 class IssueSerializer(serializers.ModelSerializer):
     """Serializer is used for an issue."""
 
-    tag = serializers.ChoiceField(choices=Issue.TAG_CHOICES)
-    priority = serializers.ChoiceField(choices=Issue.PRIORITY_CHOICES)  # priority (LOW, MEDIUM or HIGH)
-    status = serializers.ChoiceField(choices=Issue.STATUS_CHOICES)  # status (To do, In progress or Completed)
     author_user = UserSerializer(read_only=True)
     assignee_user = UserSerializer()
     project = ProjectSerializer(read_only=True)
 
     class Meta:
         model = Issue
-        fields = ['id', 'tag', 'priority', 'status', 'author_user', 'assignee_user', 'project']
+        fields = ['id', 'title', 'description', 'tag', 'priority', 'status', 'assignee_user', 'author_user', 'project']
         read_only_fields = ['id']
 
     def create(self, validated_data):

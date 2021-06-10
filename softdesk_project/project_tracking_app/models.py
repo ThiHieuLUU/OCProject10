@@ -68,14 +68,14 @@ class Issue(models.Model):
 
     title = models.CharField(max_length=128)
     description = models.CharField(max_length=256)
-    tag = models.CharField(max_length=16, choices=TAG_CHOICES, blank=True)  # tag (BUG, IMPROVEMENT or TASK)
-    priority = models.CharField(max_length=16, choices=PRIORITY_CHOICES, blank=True)  # priority (LOW, MEDIUM or HIGH)
+    tag = models.CharField(max_length=16, choices=TAG_CHOICES, blank=True)
+    priority = models.CharField(max_length=16, choices=PRIORITY_CHOICES, blank=True)
     status = models.CharField(max_length=16, choices=STATUS_CHOICES,
                               blank=True)  # status (To do, In progress or Completed)
     author_user = models.ForeignKey(User, related_name='issues', on_delete=models.CASCADE)
     assignee_user = models.ForeignKey(User, related_name='assignee_issues', default=author_user,
                                       on_delete=models.CASCADE)
-    project = models.ForeignKey(Project, related_name='issues', on_delete=models.CASCADE)  # ??? project_id : integer
+    project = models.ForeignKey(Project, related_name='issues', on_delete=models.CASCADE)
     created_time = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
