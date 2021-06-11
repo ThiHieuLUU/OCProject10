@@ -33,7 +33,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ['id', 'title', 'project_type', 'description', 'users']
+        fields = ['id', 'title', 'type', 'description', 'users']
         read_only_fields = ['id']
 
     def create(self, validated_data):
@@ -68,13 +68,13 @@ class ContributorSerializer(serializers.ModelSerializer):
 class IssueSerializer(serializers.ModelSerializer):
     """Serializer is used for an issue."""
 
-    author_user = UserSerializer(read_only=True)
+    author = UserSerializer(read_only=True)
     assignee_user = UserSerializer()
     project = ProjectSerializer(read_only=True)
 
     class Meta:
         model = Issue
-        fields = ['id', 'title', 'description', 'tag', 'priority', 'status', 'assignee_user', 'author_user', 'project']
+        fields = ['id', 'title', 'description', 'tag', 'priority', 'status', 'assignee_user', 'author', 'project']
         read_only_fields = ['id']
 
     def create(self, validated_data):
@@ -95,12 +95,12 @@ class IssueSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     """Serializer is used for a comment."""
 
-    author_user = UserSerializer(read_only=True)
+    author = UserSerializer(read_only=True)
     issue = IssueSerializer(read_only=True)
 
     class Meta:
         model = Comment
-        fields = ['id', 'description', 'author_user', 'issue']
+        fields = ['id', 'description', 'author', 'issue']
         read_only_fields = ['id']
         depth = 1
 

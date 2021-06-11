@@ -112,7 +112,7 @@ class ProjectUserViewSet(
 
         permission = data.get("permission")
         if permission == 'AUTHOR':
-            raise UniqueConstraint(detail="AUTHOR permission existed. Select another permission except AUTHOR.")
+            raise UniqueConstraint(detail="'AUTHOR' of the project is unique. Select another permission except AUTHOR.")
 
         serializer = ContributorSerializer(data=data)  # data has popped user data
         serializer.is_valid(raise_exception=True)
@@ -157,11 +157,11 @@ class IssueViewSet(viewsets.ModelViewSet):
         """The authenticated user adds a new issue to a project."""
 
         project = get_object_or_404(Project, pk=project_pk)
-        author_user = self.request.user
+        author = self.request.user
 
         serializer = IssueSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(project=project, author_user=author_user)
+        serializer.save(project=project, author=author)
         return Response(serializer.data)
 
     def perform_update(self, serializer):
@@ -204,8 +204,8 @@ class CommentViewSet(viewsets.ModelViewSet):
         """The authenticated user adds a new comment to an issue."""
 
         issue = get_object_or_404(Issue, pk=issue_pk)
-        author_user = self.request.user
+        author = self.request.user
         serializer = CommentSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(author_user=author_user, issue=issue)
+        serializer.save(author=author, issue=issue)
         return Response(serializer.data)

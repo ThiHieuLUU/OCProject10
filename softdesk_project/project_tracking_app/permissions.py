@@ -34,7 +34,7 @@ class UserRole:
             return contributor.permission == "AUTHOR"
 
         if type(obj) in [Issue, Comment]:
-            return request.user == obj.author_user
+            return request.user == obj.author
 
 
 class EndpointNestedRelation:
