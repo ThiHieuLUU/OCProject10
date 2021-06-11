@@ -4,7 +4,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status, mixins
 from rest_framework.response import Response
-from rest_framework.exceptions import APIException
+
 
 from .models import (
     User,
@@ -25,6 +25,8 @@ from .permissions import (
     IssuePermission,
     CommentPermission,
 )
+
+from .exceptions import UniqueConstraint
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
@@ -106,11 +108,11 @@ class ProjectUserViewSet(
         project = Project.objects.get(pk=project_pk)
 
         if user in users:
-            raise APIException("This user is already added to the project.")
+            raise UniqueConstraint(detail="This user is already one of contributors of the project")
 
         permission = data.get("permission")
         if permission == 'AUTHOR':
-            raise APIException("Select another permission except AUTHOR.")
+            raise UniqueConstraint(detail="AUTHOR permission existed. Select another permission except AUTHOR.")
 
         serializer = ContributorSerializer(data=data)  # data has popped user data
         serializer.is_valid(raise_exception=True)
