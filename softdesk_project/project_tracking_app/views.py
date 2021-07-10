@@ -112,7 +112,7 @@ class ProjectUserViewSet(
 
         permission = data.get("permission")
         if permission == 'AUTHOR':
-            raise UniqueConstraint(detail="'AUTHOR' of the project is unique. Select another permission except AUTHOR.")
+            raise UniqueConstraint(detail="'AUTHOR' project is unique. Select another permission except AUTHOR.")
 
         serializer = ContributorSerializer(data=data)  # data has popped user data
         serializer.is_valid(raise_exception=True)
