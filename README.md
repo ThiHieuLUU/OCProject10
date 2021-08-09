@@ -75,4 +75,4 @@ firefox flake8-rapport/index.html &
 ```
 
 ## 5. Postman documentation
-See [here](https://www.postman.com/hieuluu/workspace/project-tracking-app/collection/15764425-c96c0004-74be-45c0-8dc8-9938049e756a?ctx=documentation) for Postman documentation of this API.
+See [here](https://www.postman.com/hieuluu/workspace/project-tracking-app/collection/15764425-c96c0004-74be-45c0-8dc8-9938049e756a?ctx=documentation) or [here](https://www.postman.com/crimson-capsule-423643/workspace/project-tracking-app/overview) for Postman documentation of this API.
